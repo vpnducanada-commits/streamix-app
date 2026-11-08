@@ -26,10 +26,22 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Init Gradle wrapper
+    - name: Download Gradle wrapper
       run: |
         cd streamix-native
-        gradle wrapper --gradle-version 8.2 --distribution-type bin
+        mkdir -p gradle/wrapper
+        curl -sL -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradle/wrapper/gradle-wrapper.jar
+        cat > gradle/wrapper/gradle-wrapper.properties << 'PROPS'
+        distributionBase=GRADLE_USER_HOME
+        distributionPath=wrapper/dists
+        distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip
+        networkTimeout=10000
+        validateDistributionUrl=true
+        zipStoreBase=GRADLE_USER_HOME
+        zipStorePath=wrapper/dists
+        PROPS
+        curl -sL -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradlew
+        chmod +x gradlew
 
     - name: Build debug APK
       run: |
