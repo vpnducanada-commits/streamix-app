@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choisis ton logo Streamix</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050505;color:#fff;font-family:Inter,system-ui;padding:24px}
+h1{text-align:center;font-size:22px;letter-spacing:1px;margin-bottom:8px}
+.sub{text-align:center;color:#777;font-size:13px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1100px;margin:0 auto}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.card{background:#0f0f0f;border:1px solid #222;border-radius:20px;overflow:hidden;transition:0.2s}
+.card:hover{border-color:#333;transform:translateY(-2px)}
+.card.selected{border-color:#E50914;box-shadow:0 0 0 2px rgba(229,9,20,0.3)}
+.preview{background:#000;height:220px;display:flex;align-items:center;justify-content:center;padding:20px}
+.preview img{max-width:100%;max-height:160px;object-fit:contain}
+.info{padding:16px}
+.info h3{font-size:14px}
+.info p{font-size:12px;color:#888;margin-top:6px;line-height:1.5}
+.tag{display:inline-block;margin-top:10px;background:#1a1a1a;border:1px solid #222;padding:4px 8px;border-radius:999px;font-size:10px;letter-spacing:0.5px;color:#aaa}
+.tag.red{background:rgba(229,9,20,0.15);color:#E50914;border-color:rgba(229,9,20,0.25)}
+.btn{width:100%;margin-top:12px;background:#fff;color:#000;border:none;padding:10px;border-radius:999px;font-weight:800;cursor:pointer}
+.btn.primary{background:#E50914;color:#fff}
+.note{text-align:center;color:#555;font-size:11px;margin-top:20px}
+</style>
+</head>
+<body>
+<h1>STREAMIX — Choisis ton logo</h1>
+<p class="sub">Tous avec le Play entre I et X • Noir & Blanc • Cliquez pour télécharger</p>
+<div class="grid">
+<div class="card selected" onclick="window.open('logo-streamix-play.png','_blank')">
+<div class="preview" style="background:#000"><img src="logo-streamix-play.png" alt="Logo A"></div>
+<div class="info">
+<h3>Option A — Rouge Signature</h3>
+<p>Play rouge #E50914 entre I et X. Le plus streaming / Netflix. Reconnaissable en icône.</p>
+<span class="tag red">RECOMMANDÉ • Rouge & Noir</span>
+<button class="btn primary">Télécharger HD</button>
+</div>
+</div>
+<div class="card" onclick="window.open('logo-proposal-2.png','_blank')">
+<div class="preview" style="background:#000"><img src="logo-proposal-2.png" alt="Logo B"></div>
+<div class="info">
+<h3>Option B — Monochrome Luxe</h3>
+<p>100% noir & blanc, Play blanc. Plus premium / minimaliste, style maison de luxe.</p>
+<span class="tag">NOIR & BLANC</span>
+<button class="btn">Télécharger HD</button>
+</div>
+</div>
+</div>
+<p class="note">Les deux sont déjà en HD. Je peux aussi te faire l'icône carrée (1024×1024) et la version inversée blanc sur noir dès que tu choisis.</p>
+</body>
+</html>

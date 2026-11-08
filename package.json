@@ -1,0 +1,20 @@
+{
+  "name": "streamix",
+  "version": "1.0.0",
+  "description": "Streamix - Navigateur prive plein ecran Rouge & Noir",
+  "main": "index.html",
+  "scripts": {
+    "build": "npx cap copy && npx cap sync",
+    "copy:android": "npx cap copy android",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/android": "^6.1.0",
+    "@capacitor/ios": "^6.1.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.0"
+  }
+}
