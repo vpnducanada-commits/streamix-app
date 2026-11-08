@@ -22,7 +22,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
+      uses: android-actions/setup-android@v3
 
     - name: Install Gradle
       run: |
@@ -38,13 +38,11 @@ jobs:
     - name: Build debug APK
       run: |
         cd streamix-native
-        gradle assembleDebug --no-daemon --stacktrace > /tmp/build.log 2>&1
-        BUILD_EXIT=$?
-        tail -80 /tmp/build.log
-        exit $BUILD_EXIT
+        gradle assembleDebug --no-daemon --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: streamix-apk
         path: streamix-native/app/build/outputs/apk/debug/*.apk
+        if-no-files-found: error
