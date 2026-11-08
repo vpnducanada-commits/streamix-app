@@ -175,8 +175,26 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 .blink-logo{animation:blinkColor 3.5s ease-in-out infinite}
 
 /* Interface statique : seul l’overlay lumineux conserve son animation. */
-#lockScreen *:not(.color-blink-overlay){animation:none !important}
+#lockScreen *:not(.color-blink-overlay):not(.whatsapp-buy):not(.name-appearance){animation:none !important}
 .browser-watermark{position:absolute;right:12px;bottom:12px;z-index:3;pointer-events:none;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 6px}
 .browser-watermark img{display:block;width:72px;height:24px;object-fit:contain}
 .admin-brand{width:100px;height:28px;object-fit:contain;object-position:left center;display:block}
 .modal-brand{width:76px;height:24px;object-fit:contain;object-position:left center;display:block;margin-bottom:4px}
+
+/* Bande de marque et animations discrètes, sans effet glitch. */
+.streamix-banner{position:fixed;top:0;left:0;right:0;height:56px;display:flex;justify-content:center;align-items:center;z-index:500;background:#0a0a0a;border-bottom:1px solid rgba(229,9,20,.36);pointer-events:none}
+.streamix-banner img{width:140px;height:45px;object-fit:contain}
+.lock-screen{padding:76px 20px 20px;overflow-y:auto}
+.lock-container{gap:12px;margin:auto}
+.logo-area .logo-icon{width:48px;height:48px;margin-bottom:4px}
+.logo-wrap{width:160px}.main-logo{width:160px}
+.code-card{padding:16px 20px}.code-input-wrapper{margin:8px 0 10px}
+.whatsapp-buy{display:flex;justify-content:center;align-items:center;gap:9px;text-decoration:none;text-align:center;color:#fff;font-weight:700;font-size:13px;border:1px solid rgba(229,9,20,.6);background:linear-gradient(135deg,#260608,#b10712);border-radius:14px;padding:13px 16px;box-shadow:0 5px 20px rgba(229,9,20,.15);animation:whatsappGlow 3s ease-in-out infinite}
+.whatsapp-buy span{font-size:19px;line-height:1}
+@keyframes whatsappGlow{0%,100%{box-shadow:0 5px 18px rgba(229,9,20,.16)}50%{box-shadow:0 5px 25px rgba(229,9,20,.4)}}
+.name-appearance{position:absolute;z-index:1;color:#fff;opacity:0;font-size:clamp(16px,4vw,24px);font-weight:700;letter-spacing:.08em;pointer-events:none;white-space:nowrap}
+.name-appearance.visible-name{animation:nameFade 5s ease-in-out both !important}
+@keyframes nameFade{0%,100%{opacity:0}30%,70%{opacity:.16}}
+.modal-overlay,.admin-panel{padding-top:72px}
+.browser-view{top:56px}
+@media (prefers-reduced-motion: reduce){.whatsapp-buy,.name-appearance.visible-name,.color-blink-overlay{animation:none !important}}

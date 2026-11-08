@@ -154,7 +154,6 @@ function enterBrowser(codeObj){
   // Afficher popup bienvenue
   const pop=document.getElementById('welcomePopup');
   if(pop) pop.classList.remove('hidden');
-  if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
   startExpiryWatcher();
 }
 function closeWelcomePopup(){
@@ -401,3 +400,21 @@ window.saveSecurityAnswer=saveSecurityAnswer;
 window.generateCode=generateCode;
 window.closeWelcomePopup=closeWelcomePopup;
 window.deleteCode=deleteCode;
+
+// Les noms apparaissent chacun leur tour, à des positions variables sur l’accueil.
+(function animateNames(){
+  const label = document.getElementById('nameAppearance');
+  if (!label) return;
+  const names = ['Godson', 'Peter'];
+  let index = 0;
+  function showNext() {
+    label.classList.remove('visible-name');
+    label.textContent = names[index++ % names.length];
+    label.style.left = (8 + Math.random() * 72) + '%';
+    label.style.top = (10 + Math.random() * 75) + '%';
+    void label.offsetWidth;
+    label.classList.add('visible-name');
+    window.setTimeout(showNext, 5500 + Math.random() * 1800);
+  }
+  showNext();
+})();
