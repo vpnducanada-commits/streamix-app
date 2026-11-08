@@ -46,6 +46,7 @@ updateUsersList(); updateStats();
 
 // Restaurer session après retour de navigation externe (APK)
 try {
+  if (new URLSearchParams(window.location.search).has('lock')) sessionStorage.removeItem('streamix_session');
   const savedSession = sessionStorage.getItem('streamix_session');
   if(savedSession){
     const sess = JSON.parse(savedSession);
@@ -85,7 +86,7 @@ document.getElementById('codeInput').addEventListener('keydown', e=>{ if(e.key==
 function isExpired(c){ if(c.expiresAt===null) return false; return Date.now() > c.expiresAt; }
 function getStatus(c){
   if(isExpired(c)) return 'expired';
-  if(c.deviceLimit!=='illimite' && c.devices && c.devices.length >= parseInt(c.deviceLimit)) return 'limit';
+  if(c.deviceLimit!=='illimite' && c.devices && c.devices.length >= parseInt(c.deviceLimit) && !c.devices.includes(deviceId)) return 'limit';
   return 'active';
 }
 function formatExpiry(c){

@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private float touchStartX;
     private boolean barVisible = false;
     private boolean gestureActive = false;
+    private boolean clearingHistory = false;
     private long lastTouchTime = 0;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -76,6 +77,14 @@ public class MainActivity extends AppCompatActivity {
                 // Ne jamais externaliser — charger toujours dans le WebView
                 view.loadUrl(url);
                 return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (clearingHistory && url.startsWith("file:///android_asset/www/index.html")) {
+                    view.clearHistory();
+                    clearingHistory = false;
+                }
             }
 
             @Override
@@ -140,7 +149,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Bouton LOCK — retour à l'écran de code
         lockBtn.setOnClickListener(v -> {
-            webView.loadUrl("file:///android_asset/www/index.html");
+            clearingHistory = true;
+            webView.loadUrl("file:///android_asset/www/index.html?lock=1");
             urlInput.setText("");
             hideBar();
         });
