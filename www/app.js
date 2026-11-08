@@ -44,6 +44,28 @@ if(els.securityAnswerInput) els.securityAnswerInput.value=securityAnswer;
 if(els.securityPreview) els.securityPreview.textContent=securityAnswer;
 updateUsersList(); updateStats();
 
+// Restaurer session après retour de navigation externe (APK)
+try {
+  const savedSession = sessionStorage.getItem('streamix_session');
+  if(savedSession){
+    const sess = JSON.parse(savedSession);
+    if(sess && !isExpired(sess) && getStatus(sess)==='active'){
+      currentSession = sess;
+      const lk = document.getElementById('lockScreen');
+      if(lk) lk.style.display='none';
+      const bv = document.getElementById('browserView');
+      if(bv) bv.classList.remove('hidden');
+      const bar = document.getElementById('topBar');
+      if(bar) bar.classList.add('hidden-bar');
+      barVisible = false;
+      updateSessionUI();
+    } else {
+      sessionStorage.removeItem('streamix_session');
+      currentSession = null;
+    }
+  }
+} catch(e) {}
+
 document.getElementById('toggleCodeView').addEventListener('click',()=>{
   const i=document.getElementById('codeInput');
   i.type=i.type==='password'?'text':'password';
@@ -120,6 +142,7 @@ function enterBrowser(codeObj){
   document.getElementById('lockScreen').style.display='none';
   document.getElementById('browserView').classList.remove('hidden');
   currentSession=codeObj;
+  try{ sessionStorage.setItem('streamix_session', JSON.stringify(codeObj)); }catch(e){}
   updateSessionUI();
   loadUrl(defaultUrl);
   // Barre toujours masquée à l'entrée
@@ -148,6 +171,15 @@ function updateSessionUI(){
 }
 function loadUrl(url){
   if(!url.startsWith('http')) url='https://'+url;
+  // APK natif : naviguer le WebView directement (Google bloque les iframes via X-Frame-Options: DENY)
+  if(window.Capacitor && Capacitor.isNativePlatform()){
+    const inp=document.getElementById('urlInput');
+    if(inp) inp.value=url;
+    defaultUrl=url; localStorage.setItem('streamix_url', url);
+    window.location.href = url;
+    return;
+  }
+  // Web fallback : iframe (fonctionne pour les sites sans X-Frame-Options)
   document.getElementById('webFrame').src=url;
   const inp=document.getElementById('urlInput');
   if(inp) inp.value=url;
@@ -167,6 +199,7 @@ function closeBrowser(){
   document.getElementById('codeInput').value='';
   const e=document.getElementById('codeError'); if(e) e.textContent='';
   currentSession=null;
+  try{ sessionStorage.removeItem('streamix_session'); }catch(e){}
   stopExpiryWatcher();
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
 }
