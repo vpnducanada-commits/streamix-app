@@ -34,6 +34,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         setContentView(R.layout.activity_main);
 
         prefs = getSharedPreferences("streamix", MODE_PRIVATE);
@@ -149,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
                         touchStartX = event.getX();
                         touchStartY = event.getY();
                         gestureActive = false;
-                        lastTouchTime = System.currentTimeMillis();
                         break;
 
                     case MotionEvent.ACTION_MOVE:
@@ -169,11 +175,13 @@ public class MainActivity extends AppCompatActivity {
                         // Double tap pour basculer la barre (si pas de geste)
                         if (!gestureActive && event.getPointerCount() == 1) {
                             long now = System.currentTimeMillis();
-                            if (now - lastTouchTime < 300) {
+                            if (lastTouchTime != 0 && now - lastTouchTime < 300) {
                                 if (barVisible) hideBar();
                                 else showBar();
+                                lastTouchTime = 0;
+                            } else {
+                                lastTouchTime = now;
                             }
-                            lastTouchTime = now;
                         }
                         break;
                 }
@@ -190,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showBar() {
         barVisible = true;
+        topBar.animate().cancel();
         topBar.setVisibility(View.VISIBLE);
         topBar.animate().translationY(0).alpha(1).setDuration(250).start();
         urlInput.setText(webView.getUrl());
@@ -197,7 +206,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void hideBar() {
         barVisible = false;
-        topBar.animate().translationY(-topBar.getHeight()).alpha(0).setDuration(250).start();
+        topBar.animate().translationY(-topBar.getHeight()).alpha(0).setDuration(250)
+                .withEndAction(() -> { if (!barVisible) topBar.setVisibility(View.GONE); }).start();
     }
 
     @Override
