@@ -51,7 +51,7 @@ def main():
     os.makedirs(adaptive_dir, exist_ok=True)
     xml = '''<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="#FFFFFF"/>
+    <background android:drawable="@android:color/white"/>
     <foreground android:drawable="@mipmap/ic_launcher"/>
 </adaptive-icon>
 '''
