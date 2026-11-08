@@ -3,7 +3,7 @@
 import os
 from PIL import Image, ImageDraw
 
-LOGO_PATH = 'streamix/www/logo-streamix-play.png'
+LOGO_PATH = 'www/logo-streamix-play.png'
 OUTPUT_BASE = 'streamix-native/app/src/main/res'
 
 DENSITY_MAP = {

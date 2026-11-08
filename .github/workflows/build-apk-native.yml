@@ -20,7 +20,7 @@ jobs:
     - name: Copy web files to assets
       run: |
         mkdir -p streamix-native/app/src/main/assets
-        cp -r streamix/www streamix-native/app/src/main/assets/www
+        cp -r www streamix-native/app/src/main/assets/www
 
     - name: Setup Java
       uses: actions/setup-java@v4
