@@ -1,8 +1,7 @@
 {
   "appId": "com.streamix.app",
   "appName": "Streamix",
-  "webDir": ".",
+  "webDir": "www",
   "server": { "androidScheme": "https" },
-  "android": { "allowMixedContent": true, "captureInput": true },
-  "ios": { "contentInset": "always", "scrollEnabled": true }
+  "android": { "allowMixedContent": true }
 }

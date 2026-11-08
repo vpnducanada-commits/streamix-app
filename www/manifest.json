@@ -1,0 +1,10 @@
+{
+  "name": "Streamix",
+  "short_name": "Streamix",
+  "description": "Navigateur privé plein écran",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#050505",
+  "theme_color": "#E50914",
+  "start_url": "./index.html"
+}
