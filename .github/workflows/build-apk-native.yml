@@ -55,7 +55,10 @@ jobs:
     - name: Build debug APK
       run: |
         cd streamix-native
-        gradle assembleDebug --no-daemon --stacktrace 2>&1 | tail -50
+        gradle assembleDebug --no-daemon --stacktrace > /tmp/build.log 2>&1
+        BUILD_EXIT=$?
+        tail -50 /tmp/build.log
+        exit $BUILD_EXIT
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
