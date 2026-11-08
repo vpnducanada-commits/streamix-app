@@ -2,7 +2,7 @@ package com.streamix.app;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
-import android.graphics.PixelFormat;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private View topBar;
+    private View brandWatermark;
     private EditText urlInput;
     private ProgressBar progressBar;
     private ImageButton lockBtn;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         webView = findViewById(R.id.webView);
         topBar = findViewById(R.id.topBar);
+        brandWatermark = findViewById(R.id.brandWatermark);
         urlInput = findViewById(R.id.urlInput);
         progressBar = findViewById(R.id.progressBar);
         lockBtn = findViewById(R.id.lockBtn);
@@ -77,6 +79,11 @@ public class MainActivity extends AppCompatActivity {
                 // Ne jamais externaliser — charger toujours dans le WebView
                 view.loadUrl(url);
                 return true;
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                brandWatermark.setVisibility(url != null && (url.startsWith("https://") || url.startsWith("http://")) ? View.VISIBLE : View.GONE);
             }
 
             @Override
@@ -119,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         goBtn.setOnClickListener(v -> {
             String url = urlInput.getText().toString().trim();
             if (url.isEmpty()) {
-                url = "https://www.google.com";
+                url = "https://vod.talis.top/";
             }
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
                 url = "https://" + url;

@@ -169,52 +169,14 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 .stat strong{display:block;font-size:18px;color:var(--red)}
 .stat span{font-size:10px;color:#666;letter-spacing:0.5px}
 
-/* === GLITCH STREAMIX chaque 7s pendant 3s === */
-.glitch-wrap{position:relative;display:flex;justify-content:center;align-items:center;width:220px;max-width:80vw;margin:0 auto}
-.glitch-wrap .main-logo{position:relative;z-index:3}
-.glitch-layer{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;opacity:0;mix-blend-mode:screen}
-.glitch-red{filter:brightness(1.2) drop-shadow(0 0 0 #ff003c);transform:translate(0)}
-.glitch-cyan{filter:brightness(1.2) drop-shadow(0 0 0 #00e6ff);transform:translate(0)}
-.glitch-logo{animation:blinkColor 3.5s ease-in-out infinite, glitchMain 10s infinite}
-.glitch-red{animation:glitchRed 10s infinite}
-.glitch-cyan{animation:glitchCyan 10s infinite}
+/* === Logo STREAMIX (blink seulement, sans glitch) === */
+.logo-wrap{position:relative;display:flex;justify-content:center;align-items:center;width:220px;max-width:80vw;margin:0 auto}
+.logo-wrap .main-logo{position:relative;z-index:3}
+.blink-logo{animation:blinkColor 3.5s ease-in-out infinite}
 
-@keyframes glitchMain{
-  0%,30%,100%{transform:translate(0) skew(0);filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5)) brightness(1)}
-  2%{transform:translate(-1px,1px) skew(0.6deg);filter:hue-rotate(8deg) drop-shadow(0 4px 12px rgba(0,0,0,0.5))}
-  4%{transform:translate(1px,-1px) skew(-0.5deg)}
-  6%{transform:translate(-2px,0) skew(0.8deg);filter:drop-shadow(2px 0 rgba(229,9,20,0.6)) brightness(1.1)}
-  8%{transform:translate(1px,1px) skew(0deg);filter:none}
-  10%{transform:translate(-1px,-1px) skew(0.4deg);filter:hue-rotate(-6deg)}
-  14%{transform:translate(2px,0) skew(-0.7deg);filter:drop-shadow(-1px 0 #E50914)}
-  18%{transform:translate(0,1px);filter:none}
-  22%{transform:translate(-1px,0) skew(0.5deg);filter:brightness(1.15)}
-  26%{transform:translate(1px,-1px) skew(-0.6deg);filter:drop-shadow(1px 0 #ff003c)}
-  30%{transform:translate(-2px,1px) skew(0.3deg)}
-  34%{transform:translate(1px,0);filter:hue-rotate(5deg)}
-  38%{transform:translate(0,-1px) skew(0.6deg);filter:none}
-  41%{transform:translate(-1px,1px);filter:brightness(1.1)}
-}
-
-@keyframes glitchRed{
-  0%,30%,100%{opacity:0;transform:translate(0)}
-  2%{opacity:0.45;transform:translate(-2px,0)}
-  4%{opacity:0;transform:translate(0)}
-  6%{opacity:0.5;transform:translate(-1.5px,1px)}
-  8%{opacity:0}
-  14%{opacity:0.4;transform:translate(-2.5px,-0.5px)}
-  22%{opacity:0.35;transform:translate(-1px,0)}
-  30%{opacity:0.45;transform:translate(-2px,1px)}
-  38%{opacity:0.3;transform:translate(-1px,-1px)}
-}
-
-@keyframes glitchCyan{
-  0%,30%,100%{opacity:0;transform:translate(0)}
-  3%{opacity:0.45;transform:translate(2px,0)}
-  6%{opacity:0}
-  10%{opacity:0.5;transform:translate(1.5px,-1px)}
-  18%{opacity:0.4;transform:translate(2px,0.5px)}
-  26%{opacity:0.35;transform:translate(1px,0)}
-  34%{opacity:0.45;transform:translate(2px,-1px)}
-  40%{opacity:0.3;transform:translate(1px,1px)}
-}
+/* Interface statique : seul l’overlay lumineux conserve son animation. */
+#lockScreen *:not(.color-blink-overlay){animation:none !important}
+.browser-watermark{position:absolute;right:12px;bottom:12px;z-index:3;pointer-events:none;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 6px}
+.browser-watermark img{display:block;width:72px;height:24px;object-fit:contain}
+.admin-brand{width:100px;height:28px;object-fit:contain;object-position:left center;display:block}
+.modal-brand{width:76px;height:24px;object-fit:contain;object-position:left center;display:block;margin-bottom:4px}

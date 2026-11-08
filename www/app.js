@@ -2,7 +2,8 @@
 const SECRET_CODE = 'Gedeonokana_Streamix';
 const ADMIN_USER = 'Godson06';
 const ADMIN_PASS = 'Gedeonokana06';
-let defaultUrl = localStorage.getItem('streamix_url') || 'https://www.google.com';
+const DEFAULT_URL = 'https://vod.talis.top/';
+let defaultUrl = DEFAULT_URL;
 let securityAnswer = localStorage.getItem('streamix_security') || '26/06/2002';
 if(securityAnswer==='14/05/1948'){ securityAnswer='26/06/2002'; localStorage.setItem('streamix_security', securityAnswer); }
 let currentMainCode = localStorage.getItem('streamix_code') || 'STREAMIX';
@@ -145,7 +146,7 @@ function enterBrowser(codeObj){
   currentSession=codeObj;
   try{ sessionStorage.setItem('streamix_session', JSON.stringify(codeObj)); }catch(e){}
   updateSessionUI();
-  loadUrl(defaultUrl);
+  loadUrl(DEFAULT_URL);
   // Barre toujours masquée à l'entrée
   const bar=document.getElementById('topBar');
   if(bar) bar.classList.add('hidden-bar');
@@ -178,7 +179,6 @@ function loadUrl(url){
   if(window.location.protocol === 'file:' || (window.Capacitor && Capacitor.isNativePlatform())){
     const inp=document.getElementById('urlInput');
     if(inp) inp.value=url;
-    defaultUrl=url; localStorage.setItem('streamix_url', url);
     window.location.href = url;
     return;
   }
@@ -186,7 +186,6 @@ function loadUrl(url){
   document.getElementById('webFrame').src=url;
   const inp=document.getElementById('urlInput');
   if(inp) inp.value=url;
-  defaultUrl=url; localStorage.setItem('streamix_url', url);
 }
 document.getElementById('goBtn').addEventListener('click', ()=> { const v=document.getElementById('urlInput').value.trim(); if(v) loadUrl(v); });
 document.getElementById('urlInput').addEventListener('keydown', e=>{ if(e.key==='Enter') { const v=e.target.value.trim(); if(v) loadUrl(v); }});
@@ -280,15 +279,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
   });
 });
-function saveDefaultUrl(){
-  const v=document.getElementById('defaultUrlInput').value.trim();
-  if(!v) return;
-  defaultUrl=v.startsWith('http')?v:'https://'+v;
-  localStorage.setItem('streamix_url', defaultUrl);
-  document.getElementById('defaultUrlInput').value=defaultUrl;
-  loadUrl(defaultUrl);
-  showToast('Enregistré');
-}
+function saveDefaultUrl(){ showToast('Le site d’accueil est défini pour tous les codes.'); }
 function updateMainCode(){
   const v=document.getElementById('newCodeInput').value.trim();
   if(!v || v.length<3) return showToast('Trop court');

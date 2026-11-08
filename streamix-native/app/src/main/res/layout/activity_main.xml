@@ -110,9 +110,29 @@
     </LinearLayout>
 
     <!-- WebView — navigateur interne Streamix -->
-    <WebView
-        android:id="@+id/webView"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <ImageView
+            android:id="@+id/brandWatermark"
+            android:layout_width="82dp"
+            android:layout_height="34dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="12dp"
+            android:padding="4dp"
+            android:background="@drawable/bg_watermark"
+            android:src="@drawable/streamix_wordmark"
+            android:scaleType="fitCenter"
+            android:alpha="0.8"
+            android:visibility="gone"
+            android:importantForAccessibility="no"
+            android:clickable="false"
+            android:focusable="false" />
+    </FrameLayout>
 
 </LinearLayout>

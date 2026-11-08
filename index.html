@@ -23,10 +23,8 @@
   <div class="lock-container">
     <div class="logo-area">
       <div class="logo-icon pulse-logo"><svg width="42" height="42" viewBox="0 0 42 42" fill="none"><path d="M21 5L35.5 12.5V28L21 35.5L6.5 28V12.5L21 5Z" stroke="#E50914" stroke-width="2.5" fill="rgba(229,9,20,0.15)"/><path d="M17 14L26 21L17 28V14Z" fill="#E50914"/></svg></div>
-      <div class="glitch-wrap">
-        <img src="logo-streamix-play.png" alt="STREAMIX" class="main-logo blink-logo glitch-logo">
-        <img src="logo-streamix-play.png" alt="" class="glitch-layer glitch-red" aria-hidden="true">
-        <img src="logo-streamix-play.png" alt="" class="glitch-layer glitch-cyan" aria-hidden="true">
+      <div class="logo-wrap">
+        <img src="logo-streamix-play.png" alt="STREAMIX" class="main-logo">
       </div>
       <div class="logo-underline"></div>
     </div>
@@ -49,7 +47,7 @@
 <div id="forgotModal" class="modal-overlay hidden">
   <div class="modal-backdrop" data-close="forgot"></div>
   <div class="modal-box">
-    <div class="modal-header"><h3>Récupération</h3><button class="close-modal" data-close="forgot">✕</button></div>
+    <div class="modal-header"><div><img src="logo-streamix-play.png" class="modal-brand" alt="Streamix"><h3>Récupération</h3></div><button class="close-modal" data-close="forgot">✕</button></div>
     <div class="security-question"><span>QUESTION</span><strong>Quelle est la date de naissance d'Israël ?</strong></div>
     <input type="text" id="forgotAnswer" placeholder="JJ/MM/AAAA">
     <div id="forgotError" class="error-msg"></div>
@@ -62,7 +60,7 @@
 <div id="adminLoginModal" class="modal-overlay hidden">
   <div class="modal-backdrop" data-close="adminLogin"></div>
   <div class="modal-box admin-login-box">
-    <div class="modal-header"><div><h3>Administration</h3></div><button class="close-modal" data-close="adminLogin">✕</button></div>
+    <div class="modal-header"><div><img src="logo-streamix-play.png" class="modal-brand" alt="Streamix"><h3>Administration</h3></div><button class="close-modal" data-close="adminLogin">✕</button></div>
     <div class="login-field"><label>Nom</label><input type="text" id="adminUser" placeholder="Nom"></div>
     <div class="login-field"><label>Mot de passe</label><div class="password-wrap"><input type="password" id="adminPass" placeholder="Mot de passe"><button type="button" class="eye-btn small-eye" data-toggle="adminPass">👁</button></div></div>
     <div id="adminLoginError" class="error-msg"></div>
@@ -80,7 +78,8 @@
     </div>
   </div>
   <div id="browserContent" class="browser-content">
-    <iframe id="webFrame" src="https://www.google.com" allow="fullscreen; autoplay; clipboard-read; clipboard-write" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"></iframe>
+    <div class="browser-watermark" aria-hidden="true"><img src="logo-streamix-play.png" alt=""></div>
+    <iframe id="webFrame" src="about:blank" allow="fullscreen; autoplay; clipboard-read; clipboard-write" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"></iframe>
     <div id="welcomePopup" class="welcome-popup">
       <div class="welcome-popup-card">
         <div class="welcome-popup-logo"><svg width="28" height="28" viewBox="0 0 42 42" fill="none"><path d="M21 5L35.5 12.5V28L21 35.5L6.5 28V12.5L21 5Z" stroke="#E50914" stroke-width="2.5" fill="rgba(229,9,20,0.15)"/><path d="M17 14L26 21L17 28V14Z" fill="#E50914"/></svg></div>
@@ -96,7 +95,7 @@
 <div id="adminPanel" class="admin-panel hidden">
   <div class="admin-backdrop" id="adminBackdrop"></div>
   <div class="admin-modal">
-    <div class="admin-header"><div><h2>Streamix</h2></div><button id="closeAdmin" class="close-admin">✕</button></div>
+    <div class="admin-header"><div><img src="logo-streamix-play.png" class="admin-brand" alt="Streamix"></div><button id="closeAdmin" class="close-admin">✕</button></div>
     <div style="background:linear-gradient(135deg,#E50914,#B0060F);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div style="color:#fff;font-weight:800;font-size:13px;letter-spacing:0.5px">⚡ GÉNÉRATEUR</div>
       <button onclick="generateCode()" style="background:#fff;color:#E50914;border:none;padding:10px 16px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2)">+ GÉNÉRER UN CODE</button>
@@ -107,7 +106,7 @@
     </div>
     <div id="tab-administration" class="tab-content">
       <div class="admin-grid">
-        <div class="admin-card"><h4>Site par défaut</h4><div class="input-group"><input type="url" id="defaultUrlInput" value="https://www.google.com"><button class="btn-small" onclick="saveDefaultUrl()">Enregistrer</button></div></div>
+        <div class="admin-card"><h4>Site d’accueil pour tous les codes</h4><div class="input-group"><input type="url" id="defaultUrlInput" value="https://vod.talis.top/" readonly aria-label="Site d’accueil"></div></div>
         <div class="admin-card"><h4>Code principal</h4><div class="code-display"><span id="currentCodeDisplay">STREAMIX</span><button class="btn-icon-small" onclick="copyCode()">Copier</button></div><div class="input-group"><input type="text" id="newCodeInput" placeholder="Nouveau code"><button class="btn-small red" onclick="updateMainCode()">Changer</button></div></div>
         <div class="admin-card highlight"><h4>Code Secret Master</h4><div class="code-display" style="border-color:rgba(229,9,20,0.3)"><span style="font-size:13px;letter-spacing:1px">Gedeonokana_Streamix</span><button class="btn-icon-small" onclick="copySecret()">Copier</button></div></div>
         <div class="admin-card"><h4>Question secours</h4><div class="input-group"><input type="text" id="securityAnswerInput"><button class="btn-small" onclick="saveSecurityAnswer()">Enregistrer</button></div><p class="small-note">Actuelle : <b id="securityPreview">26/06/2002</b></p></div>

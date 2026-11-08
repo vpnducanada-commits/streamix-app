@@ -170,6 +170,13 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 .stat span{font-size:10px;color:#666;letter-spacing:0.5px}
 
 /* === Logo STREAMIX (blink seulement, sans glitch) === */
-.glitch-wrap{position:relative;display:flex;justify-content:center;align-items:center;width:220px;max-width:80vw;margin:0 auto}
-.glitch-wrap .main-logo{position:relative;z-index:3}
+.logo-wrap{position:relative;display:flex;justify-content:center;align-items:center;width:220px;max-width:80vw;margin:0 auto}
+.logo-wrap .main-logo{position:relative;z-index:3}
 .blink-logo{animation:blinkColor 3.5s ease-in-out infinite}
+
+/* Interface statique : seul l’overlay lumineux conserve son animation. */
+#lockScreen *:not(.color-blink-overlay){animation:none !important}
+.browser-watermark{position:absolute;right:12px;bottom:12px;z-index:3;pointer-events:none;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 6px}
+.browser-watermark img{display:block;width:72px;height:24px;object-fit:contain}
+.admin-brand{width:100px;height:28px;object-fit:contain;object-position:left center;display:block}
+.modal-brand{width:76px;height:24px;object-fit:contain;object-position:left center;display:block;margin-bottom:4px}
