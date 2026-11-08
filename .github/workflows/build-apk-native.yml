@@ -39,10 +39,23 @@ jobs:
       run: |
         gradle --version
 
+    - name: Check Android SDK
+      run: |
+        ls /usr/local/lib/android/sdk/ 2>/dev/null || echo "SDK not found at /usr/local/lib/android/sdk"
+        ls /opt/android-sdk/ 2>/dev/null || echo "SDK not found at /opt/android-sdk"
+        find / -name "sdkmanager" -type f 2>/dev/null | head -3 || echo "sdkmanager not found"
+
+    - name: Create local.properties
+      run: |
+        SDK_PATH=$(dirname $(dirname $(find / -name "sdkmanager" -type f 2>/dev/null | head -1)))
+        echo "sdk.dir=$SDK_PATH" > streamix-native/local.properties
+        echo "SDK path: $SDK_PATH"
+        cat streamix-native/local.properties
+
     - name: Build debug APK
       run: |
         cd streamix-native
-        gradle assembleDebug --no-daemon --stacktrace
+        gradle assembleDebug --no-daemon --stacktrace 2>&1 | tail -50
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
