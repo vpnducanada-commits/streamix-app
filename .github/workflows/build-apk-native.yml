@@ -7,15 +7,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
     - uses: actions/checkout@v4
-
-    - name: Generate icons
-      run: |
-        pip install Pillow
-        python scripts/make-icons-native.py
 
     - name: Copy web files to assets
       run: |
@@ -28,6 +21,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+
     - name: Install Gradle
       run: |
         cd /tmp
@@ -35,33 +31,20 @@ jobs:
         unzip -q gradle-8.2-bin.zip
         echo "/tmp/gradle-8.2/bin" >> $GITHUB_PATH
 
-    - name: Verify Gradle
+    - name: Accept SDK licenses
       run: |
-        gradle --version
-
-    - name: Check Android SDK
-      run: |
-        ls /usr/local/lib/android/sdk/ 2>/dev/null || echo "SDK not found at /usr/local/lib/android/sdk"
-        ls /opt/android-sdk/ 2>/dev/null || echo "SDK not found at /opt/android-sdk"
-        find / -name "sdkmanager" -type f 2>/dev/null | head -3 || echo "sdkmanager not found"
-
-    - name: Create local.properties
-      run: |
-        SDK_PATH=$(dirname $(dirname $(find / -name "sdkmanager" -type f 2>/dev/null | head -1)))
-        echo "sdk.dir=$SDK_PATH" > streamix-native/local.properties
-        echo "SDK path: $SDK_PATH"
-        cat streamix-native/local.properties
+        yes | sdkmanager --licenses || true
 
     - name: Build debug APK
       run: |
         cd streamix-native
         gradle assembleDebug --no-daemon --stacktrace > /tmp/build.log 2>&1
         BUILD_EXIT=$?
-        tail -50 /tmp/build.log
+        tail -80 /tmp/build.log
         exit $BUILD_EXIT
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: streamix-apk
-        path: streamix-native/app/build/outputs/apk/debug/app-debug.apk
+        path: streamix-native/app/build/outputs/apk/debug/*.apk
