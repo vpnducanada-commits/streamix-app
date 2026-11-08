@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generate Android launcher icons from logo-streamix-play.png."""
-import os, sys, shutil
+import os, sys
 from PIL import Image
 
 LOGO = "www/logo-streamix-play.png"
@@ -23,29 +23,35 @@ def main():
     w, h = img.size
     print(f"Source logo: {w}x{h}")
 
-    # Calculer le padding pour adaptive icon
-    # On veut que l'icône occupe 66% du cadre (standard Android)
-    padding_ratio = 0.17  # 17% padding
-
     for folder, size in SIZES.items():
         folder_path = os.path.join(RES, folder)
         os.makedirs(folder_path, exist_ok=True)
 
-        # Redimensionner directement le logo
-        resized = img.resize((size, size), Image.LANCZOS)
+        # Créer un canvas carré blanc avec le logo centré
+        canvas = Image.new("RGBA", (size, size), (255, 255, 255, 255))
+        # Redimensionner le logo en gardant le ratio, contenu dans 80% du cadre
+        margin = int(size * 0.10)
+        target = size - 2 * margin
+        ratio = min(target / w, target / h)
+        new_w = int(w * ratio)
+        new_h = int(h * ratio)
+        logo_resized = img.resize((new_w, new_h), Image.LANCZOS)
+        x = (size - new_w) // 2
+        y = (size - new_h) // 2
+        canvas.paste(logo_resized, (x, y), logo_resized)
+
         out = os.path.join(folder_path, "ic_launcher.png")
-        resized.save(out, "PNG")
+        canvas.save(out, "PNG")
         print(f"  {out} ({size}x{size})")
 
-        # Round version (same image)
-        resized.save(os.path.join(folder_path, "ic_launcher_round.png"), "PNG")
+        canvas.save(os.path.join(folder_path, "ic_launcher_round.png"), "PNG")
 
     # Adaptive icon XML (Android 8+)
     adaptive_dir = os.path.join(RES, "mipmap-anydpi-v26")
     os.makedirs(adaptive_dir, exist_ok=True)
     xml = '''<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/white"/>
+    <background android:drawable="#FFFFFF"/>
     <foreground android:drawable="@mipmap/ic_launcher"/>
 </adaptive-icon>
 '''
