@@ -1,0 +1,43 @@
+name: Build Android Native APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Generate icons
+      run: |
+        pip install Pillow
+        python scripts/make-icons-native.py
+
+    - name: Copy web files to assets
+      run: |
+        mkdir -p streamix-native/app/src/main/assets
+        cp -r streamix/www streamix-native/app/src/main/assets/www
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Init Gradle wrapper
+      run: |
+        cd streamix-native
+        gradle wrapper --gradle-version 8.2 --distribution-type bin
+
+    - name: Build debug APK
+      run: |
+        cd streamix-native
+        ./gradlew assembleDebug --no-daemon
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: streamix-apk
+        path: streamix-native/app/build/outputs/apk/debug/app-debug.apk

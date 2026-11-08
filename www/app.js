@@ -171,8 +171,10 @@ function updateSessionUI(){
 }
 function loadUrl(url){
   if(!url.startsWith('http')) url='https://'+url;
-  // APK natif : naviguer le WebView directement (Google bloque les iframes via X-Frame-Options: DENY)
-  if(window.Capacitor && Capacitor.isNativePlatform()){
+  // WebView natif Android (protocol file://) — naviguer directement dans le WebView interne
+  // window.location.href dans le WebView natif charge la page dans le WebView (pas externalisation vers Chrome)
+  // X-Frame-Options ne s'applique pas à une page principale WebView — Google charge normalement
+  if(window.location.protocol === 'file:' || (window.Capacitor && Capacitor.isNativePlatform())){
     const inp=document.getElementById('urlInput');
     if(inp) inp.value=url;
     defaultUrl=url; localStorage.setItem('streamix_url', url);
