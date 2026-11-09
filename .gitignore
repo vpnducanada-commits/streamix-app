@@ -4,3 +4,9 @@ streamix-native/build/
 streamix-native/app/build/
 streamix-native/local.properties
 *.log
+
+# Signature de release (clé privée + mots de passe)
+keystore/
+keystore.properties
+*.jks
+*.keystore

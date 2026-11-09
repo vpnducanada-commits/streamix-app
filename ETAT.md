@@ -155,3 +155,15 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - Release publiée : `{"published":17}` ; l'APK servi par le lien de la release a été re-téléchargé et contrôlé (`versionCode 17`, `usesCleartextTraffic=true`).
 - Visuels UHD au QR de la v17 (décodage vérifié) : vertical `1VVcetzdzDVuhxLBuiLee-U1_pjoQxoz4`, carré `14gHe_vFH_a9UiQAHAXCst9IkS9X40Pl5`.
 - Drive : seul `Streamix-natif-v17.apk` (`1PwjmoKYwVsAauqH1AHdNIpNjkNmTiLEp`) reste téléchargeable.
+
+## 2026-11-09 — v18 : clé de signature de release officielle
+
+- **Keystore dédié créé** : `keystore/streamix-release.jks` (RSA 4096, validité 10 950 jours → 2056), alias `streamix`, sujet `CN=Streamix, OU=Streaming 241, O=Streamix, L=Libreville, ST=Estuaire, C=GA`.
+- Empreinte SHA-256 : `67157359a4d6e23b0872e4600892104af37463975220278374dba859cf523a0b` (SHA-1 `7b55cf7d…`). Remplace le certificat `CN=Android Debug` utilisé depuis la v1.
+- **Le keystore et ses mots de passe ne sont pas versionnés** : `keystore/`, `keystore.properties` et `*.jks` ajoutés au `.gitignore`. Le build lit `keystore.properties` ; s'il est absent (CI, machine neuve), il retombe sur le keystore de debug (et le dit dans `ETAT.md`).
+- Copies de sauvegarde remises à l'utilisateur : `Streamix-release-keystore.jks` + `Streamix-SIGNATURE-a-conserver.md` (mot de passe, alias, empreintes, consignes de sauvegarde).
+- **Conséquence assumée** : la signature change, donc l'app installée (v13→v17) doit être **désinstallée** avant d'installer la v18. Les notes de version affichées dans la bannière de mise à jour le disent désormais.
+- APK v18 : `versionCode 18`, `versionName "18.0"`, 2 865 203 o, sha256 `cdb41c35…`, signé `CN=Streamix`, non débogable, `usesCleartextTraffic=true`.
+- Release publiée : `{"published":18}` ; APK re-téléchargé depuis le lien de la release et contrôlé (versionCode 18 + empreinte du nouveau certificat).
+- Visuels UHD au QR de la v18 (décodage vérifié) : vertical `1BmFZFptuGi4BGse3Nwj0x-KLG-AKl-60`, carré `1wBK_qMvo_lVeWJkkzD2pm-_IszNO5B7H`.
+- Drive : seul `Streamix-natif-v18.apk` (`1bd-6d3Cv3VzNEjFvlQS8K1SRBvLC_rXf`) reste téléchargeable.

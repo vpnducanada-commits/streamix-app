@@ -8,18 +8,31 @@ android {
         applicationId "com.streamix.app"
         minSdk 24
         targetSdk 34
-        versionCode 17
-        versionName "17.0"
+        versionCode 18
+        versionName "18.0"
+    }
+
+    // Signature officielle : keystore.properties (non versionné) en priorité.
+    // Repli sur le keystore de debug uniquement si le fichier est absent (CI, machine neuve).
+    def ksPropsFile = rootProject.file('../keystore.properties')
+    def ksProps = new Properties()
+    if (ksPropsFile.exists()) {
+        ksPropsFile.withInputStream { ksProps.load(it) }
     }
 
     signingConfigs {
-        // Même certificat que les versions précédentes : la mise à jour s'installe
-        // par-dessus l'application existante, sans désinstallation.
         stable {
-            storeFile file(System.getProperty('user.home') + '/.android/debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            if (ksPropsFile.exists()) {
+                storeFile rootProject.file('../' + ksProps['storeFile'])
+                storePassword ksProps['storePassword']
+                keyAlias ksProps['keyAlias']
+                keyPassword ksProps['keyPassword']
+            } else {
+                storeFile file(System.getProperty('user.home') + '/.android/debug.keystore')
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
         }
     }
 
