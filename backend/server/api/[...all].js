@@ -43,8 +43,8 @@ return key;
 }
 function normalizeCode(value) {
 if (typeof value !== 'string') return null;
-const clean = value.trim().replace(/[\s-]/g, '').toUpperCase();
-return /^[A-F0-9]{32}$/.test(clean) ? clean : null;
+const clean = value.trim().replace(/[\s-]/g, '').toLowerCase();
+return /^[a-f0-9]{32}$/.test(clean) ? clean : null;
 }
 function digest(purpose, value, secret) {
 return crypto.createHmac('sha256', secret).update(purpose + '\u0000' + value, 'utf8').digest('hex');

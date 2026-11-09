@@ -22,7 +22,7 @@ global.fetch = async (url, options) => {
   seen.push(q);
   if (q.includes("encode(value, 'hex')")) return {ok: true, status: 200, text: async () => JSON.stringify([{k: 'ef'.repeat(32)}])};
   if (q.includes('record_attempt')) return {ok: true, status: 200, text: async () => JSON.stringify([{status: attemptStatus}])};
-  if (q.includes('claim_device')) return {ok: true, status: 200, text: async () => JSON.stringify([{result: claimResult, valid_until: '2026-12-01T00:00:00Z'}])};
+  if (q.includes('claim_device')) { seen.push(JSON.stringify(JSON.parse(options.body).params)); return {ok: true, status: 200, text: async () => JSON.stringify([{result: claimResult, valid_until: '2026-12-01T00:00:00Z'}])}; }
   if (q.includes('INSERT INTO streamix.access_codes')) { lastInsert = JSON.parse(options.body).params; return {ok: true, status: 200, text: async () => '[]'}; }
   if (q.includes('FROM streamix.access_codes c')) return {ok: true, status: 200, text: async () => JSON.stringify({rows: codeRows})};
   if (q.includes('information_schema.tables')) return {ok: true, status: 200, text: async () => JSON.stringify([{n: 5}])};
@@ -128,4 +128,17 @@ test('unknown routes answer 404', async () => {
   const r = res();
   await api(req('/inconnu'), r);
   assert.equal(r.code, 404);
+});
+
+test('le code est empreinté en minuscules, comme à la création', async () => {
+  const crypto = require('node:crypto');
+  const key = Buffer.from('ef'.repeat(32), 'hex');
+  const lower = 'A1B2C3D4E5F60718293A4B5C6D7E8F90'.toLowerCase();
+  const attendu = crypto.createHmac('sha256', key).update('code\u0000' + lower, 'utf8').digest('hex');
+  seen.length = 0;
+  claimResult = 'ok';
+  const r = res();
+  await api(req('/redeem', {method: 'POST', body: {code: code, deviceId: device}}), r);
+  const params = JSON.parse(seen[seen.length - 1]);
+  assert.equal(params[0], attendu);
 });
