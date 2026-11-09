@@ -7,6 +7,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
@@ -15,8 +17,15 @@ import androidx.core.content.ContextCompat;
 /** Canal de notifications et affichage du rappel de visionnage. */
 public final class NotificationHelper {
 
-    public static final String CHANNEL_ID = "streamix_rappels";
+    /** Nouveau canal : Android fige le son d'un canal, il faut un identifiant neuf pour le changer. */
+    public static final String CHANNEL_ID = "streamix_rappels_v2";
+    private static final String LEGACY_CHANNEL_ID = "streamix_rappels";
     private static final int NOTIFICATION_ID = 2001;
+
+    /** Son personnalisé embarqué dans l'application (res/raw/streamix_chime.wav). */
+    public static Uri reminderSound(Context ctx) {
+        return Uri.parse("android.resource://" + ctx.getPackageName() + "/" + R.raw.streamix_chime);
+    }
 
     private NotificationHelper() {}
 
@@ -28,8 +37,18 @@ public final class NotificationHelper {
                 CHANNEL_ID,
                 "Rappels de visionnage",
                 NotificationManager.IMPORTANCE_DEFAULT);
-        channel.setDescription("Rappel quotidien pour profiter de Streamix");
+        channel.setDescription("Rappel « C'est l'heure du visionnage »");
+        AudioAttributes attrs = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        channel.setSound(reminderSound(ctx), attrs);
+        channel.enableVibration(true);
         nm.createNotificationChannel(channel);
+        // L'ancien canal (son par défaut) n'est plus utilisé.
+        try {
+            nm.deleteNotificationChannel(LEGACY_CHANNEL_ID);
+        } catch (Exception ignored) { }
     }
 
     /** Android 13+ exige l'accord explicite de l'utilisateur. */
@@ -58,6 +77,7 @@ public final class NotificationHelper {
                 .setColor(0xFFE50914)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setSound(reminderSound(ctx))
                 .setContentIntent(contentIntent);
 
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);

@@ -69,3 +69,9 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - **Voile latéral léger** (24 dp de chaque côté, dégradé rouge 18 % → transparent) sur toutes les pages après validation, jamais sur l'écran de code ; version web identique via `.browser-view::before/::after`.
 - **Rappel toutes les 5 h** : créneaux fixes 00h, 05h, 10h, 15h, 20h (heure locale), `ReminderScheduler.INTERVAL_HOURS = 5`.
 - APK v11 : `versionCode 11`, 3 516 949 o, même certificat.
+
+## 2026-11-08 — v12
+
+- **Créneaux de rappel** : 20 h et 2 h (heure locale) au lieu du pas de 5 h — `ReminderScheduler.SLOT_HOURS = {20, 2}`.
+- **Son de notification personnalisé** : `res/raw/streamix_chime.wav` (carillon 2 notes C6→E6, 1,75 s), canal `streamix_rappels_v2` (identifiant neuf, car Android fige le son d'un canal), ancien canal `streamix_rappels` supprimé, `setSound` conservé pour Android 7.
+- APK v12 : `versionCode 12`, 3 672 393 o, même certificat.

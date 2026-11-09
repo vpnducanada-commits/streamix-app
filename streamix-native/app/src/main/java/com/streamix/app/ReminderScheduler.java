@@ -8,30 +8,37 @@ import android.content.Intent;
 import java.util.Calendar;
 
 /**
- * Rappel de visionnage envoyé toutes les 5 heures.
- * Créneaux fixes, heure locale : 00h, 05h, 10h, 15h, 20h.
+ * Rappel de visionnage : deux créneaux par jour, à 20 h et à 2 h (heure locale),
+ * les moments de soirée et de nuit où l'on regarde un film.
  * Aucune permission spéciale n'est nécessaire (alarme inexacte tolérée par le système).
  */
 public final class ReminderScheduler {
 
-    /** Intervalle entre deux notifications, en heures. */
-    public static final int INTERVAL_HOURS = 5;
+    /** Heures d'envoi, format 24 h. Modifier ce tableau pour changer les créneaux. */
+    private static final int[] SLOT_HOURS = {20, 2};
 
     private static final int REQUEST_CODE = 41;
 
     private ReminderScheduler() {}
 
-    /** Prochain créneau : la prochaine heure pleine multiple de {@link #INTERVAL_HOURS}. */
+    /** Prochain créneau : le plus proche parmi aujourd'hui et demain. */
     public static long nextTriggerMillis() {
+        long now = System.currentTimeMillis();
+        long best = Long.MAX_VALUE;
         Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.add(Calendar.HOUR_OF_DAY, 1);
-        while (cal.get(Calendar.HOUR_OF_DAY) % INTERVAL_HOURS != 0) {
-            cal.add(Calendar.HOUR_OF_DAY, 1);
+        for (int dayOffset = 0; dayOffset <= 1; dayOffset++) {
+            for (int hour : SLOT_HOURS) {
+                cal.setTimeInMillis(now);
+                cal.add(Calendar.DAY_OF_YEAR, dayOffset);
+                cal.set(Calendar.HOUR_OF_DAY, hour);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                long at = cal.getTimeInMillis();
+                if (at > now && at < best) best = at;
+            }
         }
-        return cal.getTimeInMillis();
+        return best;
     }
 
     public static void schedule(Context c) {
