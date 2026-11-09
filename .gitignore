@@ -1,0 +1,6 @@
+# Build / cache
+streamix-native/.gradle/
+streamix-native/build/
+streamix-native/app/build/
+streamix-native/local.properties
+*.log

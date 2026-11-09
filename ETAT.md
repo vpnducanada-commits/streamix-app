@@ -45,3 +45,11 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
   `redeem`, en minuscules côté création). `normalizeCode` renvoie désormais des minuscules ;
   test de non-régression ajouté (12/12). Vérifié en production : appareil A 200, A bis 200,
   B 200, C 403 `device_limit`, code minuscule/sans tirets 200, code inconnu 404.
+
+## 2026-11-08 — v7 native : app branchée sur le serveur
+
+- `www/app.js` ne contient plus aucun secret : validation par `POST /api/redeem` (`deviceId` base64url 43 car.), destination et `validUntil` lus depuis la réponse, bannière de mise à jour via `GET /api/release`.
+- `MainActivity.java` : `setAllowFileAccessFromFileURLs` + `setAllowUniversalAccessFromFileURLs(true)` (le `file://` local peut appeler l'API HTTPS).
+- `app/build.gradle` : `versionCode 7`, `versionName "7.0"` — même certificat debug que la v6 (mise à jour sans désinstallation).
+- Release servie : `GET /api/release` → `{versionCode:7, versionName:"7.0", downloadUrl: Drive}` ; les v6 voient la bannière.
+- APK : https://drive.google.com/file/d/1a0f76OcC4GGTGgTrtPMOpiWMo3XzciNG/view (public, 3 513 236 o).

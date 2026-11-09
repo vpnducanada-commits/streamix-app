@@ -1,17 +1,33 @@
-// STREAMIX - Gestion durée + appareils + secret master
-const SECRET_CODE = 'Gedeonokana_Streamix';
-const ADMIN_USER = 'Godson06';
-const ADMIN_PASS = 'Gedeonokana06';
+// STREAMIX - les codes sont validés par le serveur, plus rien en local
+const API_BASE = 'https://streamix-app.vercel.app';
+const APP_VERSION_CODE = 7;
 const DEFAULT_URL = 'https://vod.talis.top/';
 let defaultUrl = DEFAULT_URL;
-let securityAnswer = localStorage.getItem('streamix_security') || '26/06/2002';
-if(securityAnswer==='14/05/1948'){ securityAnswer='26/06/2002'; localStorage.setItem('streamix_security', securityAnswer); }
-let currentMainCode = localStorage.getItem('streamix_code') || 'STREAMIX';
+let securityAnswer = '';
+let currentMainCode = '';
 let codes = [];
-let deviceId = localStorage.getItem('streamix_deviceId');
 let currentSession = null;
-let barVisible=false;
-if(!deviceId){ deviceId='dev_'+Math.random().toString(36).slice(2,9)+Date.now().toString(36); localStorage.setItem('streamix_deviceId', deviceId); }
+let barVisible = false;
+let unlocking = false;
+
+// Identifiant d'appareil stable, au format attendu par le serveur (32 à 128 caractères).
+function getOrCreateDeviceId(){
+  let id = null;
+  try { id = localStorage.getItem('streamix_deviceId'); } catch(e) {}
+  if(id && /^[A-Za-z0-9_-]{32,128}$/.test(id)) return id;
+  const bytes = new Uint8Array(32);
+  (window.crypto || window.msCrypto).getRandomValues(bytes);
+  id = btoa(String.fromCharCode.apply(null, bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  try { localStorage.setItem('streamix_deviceId', id); } catch(e) {}
+  return id;
+}
+const deviceId = getOrCreateDeviceId();
+
+function parseValidUntil(v){
+  if(!v) return null;
+  const t = Date.parse(String(v).replace(' ','T').replace(/\+00$/,'Z'));
+  return isNaN(t) ? null : t;
+}
 try{
   const raw=JSON.parse(localStorage.getItem('streamix_codes')||'null');
   if(Array.isArray(raw)){ codes=raw.map(c=>migrateCode(c)); }
@@ -104,38 +120,44 @@ function daysLeft(c){
 }
 
 function tryUnlock(){
-  const valRaw=document.getElementById('codeInput').value.trim();
-  if(!valRaw){ showError('Entre ton code'); return; }
-  const err=document.getElementById('codeError');
-  if(valRaw===SECRET_CODE){
-    err.textContent='';
-    enterBrowser({code:SECRET_CODE, name:'Master', type:'secret', duration:'Illimité', deviceLimit:'Illimité', expiresAt:null});
-    return;
-  }
-  let found=codes.find(c=>c.code.toUpperCase()===valRaw.toUpperCase());
-  if(!found && valRaw.toUpperCase()===currentMainCode.toUpperCase()){
-    const temp={id:'main', code:currentMainCode, name:'Principal', duration:'7', deviceLimit:2, devices:[], createdAt:Date.now(), expiresAt:Date.now()+7*86400000, status:'active'};
-    found=temp;
-  }
-  if(!found){ showError('⛔ Code non reconnu'); shakeInput(); return; }
-  if(isExpired(found)){
-    showError('⛔ Code expiré le '+formatExpiry(found));
-    found.status='expired'; saveCodes(); updateUsersList(); return;
-  }
-  const limit = found.deviceLimit;
-  const devices = found.devices || [];
-  const alreadyRegistered = devices.includes(deviceId);
-  if(limit!=='illimite' && devices.length >= parseInt(limit) && !alreadyRegistered){
-    showError(`⛔ Limite d'appareils atteinte (${devices.length}/${limit})`);
-    return;
-  }
-  if(!alreadyRegistered){
-    found.devices = [...devices, deviceId];
-    if(found.id==='main'){ found.id=Date.now(); codes.push(found); saveCodes(); }
-    else { const idx=codes.findIndex(c=>c.id===found.id); if(idx>=0){ codes[idx].devices=found.devices; saveCodes(); } }
-  }
-  err.textContent='';
-  enterBrowser(found);
+  const raw = document.getElementById('codeInput').value.trim();
+  const err = document.getElementById('codeError');
+  if(!raw){ showError('Entre ton code'); return; }
+  if(unlocking) return;
+  unlocking = true;
+  err.style.color = '#9a9aa6';
+  err.textContent = 'Vérification…';
+  fetch(API_BASE + '/api/redeem', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({code: raw, deviceId: deviceId})
+  }).then(function(r){
+    return r.json().catch(function(){ return {}; }).then(function(b){ return {s:r.status, b:b}; });
+  }).then(function(res){
+    unlocking = false;
+    err.style.color = '#ff8a8f';
+    if(res.s === 200 && res.b && res.b.ok){
+      err.textContent = '';
+      const expire = parseValidUntil(res.b.validUntil);
+      enterBrowser({code: raw.toUpperCase(), name:'Accès', destination: res.b.destination,
+                    validUntil: res.b.validUntil, expiresAt: expire, deviceLimit:'∞', type:'server'});
+      return;
+    }
+    const reason = res.b && res.b.reason;
+    let msg = res.b && res.b.message;
+    if(!msg){
+      if(reason === 'device_limit') msg = "Limite d'appareils atteinte pour ce code.";
+      else if(reason === 'expired') msg = 'Ce code a expiré.';
+      else if(reason === 'rate_limited') msg = 'Trop de tentatives, patiente quelques minutes.';
+      else msg = "Code non reconnu. Vérifie les caractères.";
+    }
+    showError('⛔ ' + msg);
+    shakeInput();
+  }).catch(function(){
+    unlocking = false;
+    err.style.color = '#ff8a8f';
+    showError('⛔ Serveur injoignable. Vérifie ta connexion internet.');
+  });
 }
 function showError(msg){ document.getElementById('codeError').textContent=msg; }
 function shakeInput(){ const i=document.getElementById('codeInput'); i.style.borderColor='#ff3b30'; setTimeout(()=>i.style.borderColor='#2a2a2a',1200); }
@@ -146,7 +168,7 @@ function enterBrowser(codeObj){
   currentSession=codeObj;
   try{ sessionStorage.setItem('streamix_session', JSON.stringify(codeObj)); }catch(e){}
   updateSessionUI();
-  loadUrl(DEFAULT_URL);
+  loadUrl(codeObj.destination || DEFAULT_URL);
   // Barre toujours masquée à l'entrée
   const bar=document.getElementById('topBar');
   if(bar) bar.classList.add('hidden-bar');
@@ -224,40 +246,15 @@ document.getElementById('forgotSubmit').addEventListener('click', checkSecurity)
 document.getElementById('forgotAnswer').addEventListener('keydown', e=>{ if(e.key==='Enter') checkSecurity(); });
 function normalizeAnswer(s){ return s.toLowerCase().trim().replace(/-/g,'/').replace(/\s+/g,' '); }
 function checkSecurity(){
-  const val=document.getElementById('forgotAnswer').value.trim();
-  const err=document.getElementById('forgotError');
-  const suc=document.getElementById('forgotSuccess');
-  err.textContent=''; suc.classList.remove('show');
-  if(!val){ err.textContent='Entre une réponse'; return; }
-  const normVal=normalizeAnswer(val);
-  const normExpected=normalizeAnswer(securityAnswer);
-  const cleanVal=normVal.replace(/\//g,'').replace(/\s/g,'');
-  const cleanExp=normExpected.replace(/\//g,'').replace(/\s/g,'');
-  const isCorrect = normVal===normExpected || cleanVal===cleanExp || normVal.includes('26/06/2002') || normVal.includes('26/6/2002') || normVal.includes('26062002');
-  if(isCorrect){
-    suc.textContent='Code : '+currentMainCode+' | Master : '+SECRET_CODE;
-    suc.classList.add('show');
-    navigator.clipboard.writeText(currentMainCode).catch(()=>{});
-  } else {
-    err.textContent='⛔ Réponse incorrecte';
-  }
+  document.getElementById('forgotError').textContent='Utilise le tableau de bord en ligne.';
 }
-document.getElementById('adminAccessLink').addEventListener('click', ()=> openModal('adminLoginModal'));
+document.getElementById('adminAccessLink').addEventListener('click', ()=>{ window.location.href = API_BASE + '/admin.html'; });
 document.getElementById('adminLoginBtn').addEventListener('click', tryAdminLogin);
 document.getElementById('adminPass').addEventListener('keydown', e=>{ if(e.key==='Enter') tryAdminLogin(); });
 document.getElementById('adminUser').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('adminPass').focus(); });
 function tryAdminLogin(){
-  const u=document.getElementById('adminUser').value.trim();
-  const p=document.getElementById('adminPass').value;
-  const err=document.getElementById('adminLoginError');
-  if(u===ADMIN_USER && p===ADMIN_PASS){
-    err.textContent='';
-    document.getElementById('adminLoginModal').classList.add('hidden');
-    document.getElementById('adminUser').value=''; document.getElementById('adminPass').value='';
-    openAdminPanel();
-  } else {
-    err.textContent='⛔ Identifiants incorrects';
-  }
+  document.getElementById('adminLoginModal').classList.add('hidden');
+  showToast('Admin : streamix-app.vercel.app/admin.html');
 }
 function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
 function closeModal(type){
@@ -280,56 +277,25 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 });
 function saveDefaultUrl(){ showToast('Le site d’accueil est défini pour tous les codes.'); }
 function updateMainCode(){
-  const v=document.getElementById('newCodeInput').value.trim();
-  if(!v || v.length<3) return showToast('Trop court');
-  currentMainCode=v; localStorage.setItem('streamix_code', v);
-  document.getElementById('currentCodeDisplay').textContent=v;
-  document.getElementById('newCodeInput').value='';
-  showToast('Code mis à jour');
+  showToast('Gere depuis le tableau de bord en ligne');
 }
-function copyCode(){ navigator.clipboard.writeText(currentMainCode).then(()=>showToast('Copié')); }
-function copySecret(){ navigator.clipboard.writeText(SECRET_CODE).then(()=>showToast('Secret copié')); }
+function copyCode(){
+  showToast('Gere depuis le tableau de bord en ligne');
+}
+function copySecret(){
+  showToast('Plus de code maitre local');
+}
 function saveSecurityAnswer(){
-  const v=document.getElementById('securityAnswerInput').value.trim();
-  if(!v) return showToast('Entre une réponse');
-  securityAnswer=v; localStorage.setItem('streamix_security', v); document.getElementById('securityPreview').textContent=v;
-  showToast('Enregistré');
+  showToast('Gere depuis le tableau de bord en ligne');
 }
 
 // GÉNÉRATEUR AUTOMATIQUE - 1 clic = 1 code
 function generateCode(){
-  const dur=document.getElementById('codeDuration').value;
-  const devLimit=document.getElementById('codeDevices').value;
-  // génération auto sans rien remplir
-  let code=Math.random().toString(36).substring(2,6).toUpperCase()+Math.floor(1000+Math.random()*9000);
-  // éviter doublons
-  let tries=0;
-  while(codes.some(c=>c.code===code) || code===SECRET_CODE || code===currentMainCode){
-    code=Math.random().toString(36).substring(2,6).toUpperCase()+Math.floor(1000+Math.random()*9000);
-    if(tries++>10) break;
-  }
-  const now=Date.now();
-  let expiresAt=null;
-  if(dur!=='illimite'){ expiresAt=now + parseInt(dur)*86400000; }
-  const count=codes.length+1;
-  const name='Code '+String(count).padStart(3,'0');
-  const newCode={
-    id:Date.now(),
-    code:code,
-    name:name,
-    duration:dur,
-    deviceLimit:devLimit,
-    devices:[],
-    createdAt:now,
-    expiresAt:expiresAt,
-    status:'active'
-  };
-  codes.push(newCode);
-  saveCodes();
-  updateUsersList(); updateStats();
-  showToast('Code généré : '+code);
+  showToast('Les codes se creent sur streamix-app.vercel.app/admin.html');
 }
-function deleteCode(id){ codes=codes.filter(c=>c.id!==id); saveCodes(); updateUsersList(); updateStats(); showToast('Supprimé'); }
+function deleteCode(id){
+  showToast('Gere depuis le tableau de bord en ligne');
+}
 function updateUsersList(){
   const list=document.getElementById('usersList');
   if(codes.length===0){
@@ -374,10 +340,9 @@ function startExpiryWatcher(){
   stopExpiryWatcher();
   watcher=setInterval(()=>{
     if(!currentSession) return;
-    if(currentSession.type==='secret') return;
-    const fresh=codes.find(c=>c.code===currentSession.code);
-    const target=fresh || currentSession;
-    if(isExpired(target)){
+    const until = currentSession.expiresAt;
+    if(!until) return;
+    if(Date.now() > until){
       stopExpiryWatcher();
       closeBrowser();
       document.getElementById('codeError').textContent='Code expiré';
@@ -418,3 +383,33 @@ window.deleteCode=deleteCode;
   }
   showNext();
 })();
+
+// ---------- Mises a jour : lecture de GET /api/release ----------
+function checkRelease(){
+  fetch(API_BASE + '/api/release', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    const rel = d && d.release;
+    if(!rel || !rel.downloadUrl) return;
+    if(Number(rel.versionCode) <= APP_VERSION_CODE) return;
+    showUpdateBanner(rel);
+  }).catch(function(){});
+}
+function showUpdateBanner(rel){
+  if(document.getElementById('updateBanner')) return;
+  const b = document.createElement('div');
+  b.id = 'updateBanner';
+  b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#141418;border-top:1px solid #2a2a30;color:#f2f2f5;padding:12px 14px;display:flex;gap:10px;align-items:center;font:13px system-ui,sans-serif';
+  const t = document.createElement('div');
+  t.style.cssText = 'flex:1';
+  t.innerHTML = '<strong>Mise a jour ' + rel.versionName + '</strong><div style="color:#9a9aa6;font-size:12px">' + (rel.notes || 'Nouvelle version disponible') + '</div>';
+  const a = document.createElement('a');
+  a.href = rel.downloadUrl;
+  a.textContent = 'Telecharger';
+  a.style.cssText = 'background:linear-gradient(135deg,#d81f26,#9c1015);color:#fff;padding:9px 14px;border-radius:9px;text-decoration:none;font-weight:600';
+  const x = document.createElement('button');
+  x.textContent = '\u00d7';
+  x.style.cssText = 'background:transparent;border:0;color:#9a9aa6;font-size:18px';
+  x.onclick = function(){ b.remove(); };
+  b.appendChild(t); b.appendChild(a); b.appendChild(x);
+  document.body.appendChild(b);
+}
+window.setTimeout(checkRelease, 1200);

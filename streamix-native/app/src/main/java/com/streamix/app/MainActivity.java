@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         settings.setBuiltInZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setGeolocationEnabled(true);
+        // La page locale (file://) doit pouvoir appeler l'API Streamix en HTTPS.
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
 
         // WebViewClient interne — TOUTE navigation reste dans le WebView
         webView.setWebViewClient(new WebViewClient() {
