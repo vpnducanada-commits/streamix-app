@@ -1,43 +1,48 @@
 package com.streamix.app;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
-import android.content.Intent;
 import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebResourceRequest;
-import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+/**
+ * Streamix — coque native autour du site.
+ * Plus aucune barre de navigation : le site occupe tout l'écran et la lecture
+ * en plein écran des vidéos est prise en charge par le WebView.
+ */
 public class MainActivity extends AppCompatActivity {
 
+    private static final String LOCK_PAGE = "file:///android_asset/www/index.html";
+    private static final int NOTIFICATION_REQUEST_CODE = 1001;
+
     private WebView webView;
-    private View topBar;
-    private View nativeBanner;
-    private EditText urlInput;
     private ProgressBar progressBar;
-    private ImageButton lockBtn;
-    private SharedPreferences prefs;
-    private boolean barVisible = false;
+    private FrameLayout fullscreenContainer;
+
+    private View fullscreenView;
+    private WebChromeClient.CustomViewCallback fullscreenCallback;
+    private int orientationBeforeFullscreen = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+
     private boolean clearingHistory = false;
-    // Geste d'ouverture de la barre : double appui simultane a deux doigts
-    private boolean twoFingerDown = false;
-    private boolean twoFingerMoved = false;
-    private long twoFingerStartMs = 0;
-    private long twoFingerTapLastMs = 0;
-    private float twoFingerX = 0f;
-    private float twoFingerY = 0f;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -45,18 +50,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        prefs = getSharedPreferences("streamix", MODE_PRIVATE);
-
         webView = findViewById(R.id.webView);
-        topBar = findViewById(R.id.topBar);
-        nativeBanner = findViewById(R.id.nativeBanner);
-        urlInput = findViewById(R.id.urlInput);
         progressBar = findViewById(R.id.progressBar);
-        lockBtn = findViewById(R.id.lockBtn);
-        ImageButton goBtn = findViewById(R.id.goBtn);
-        ImageButton backBtn = findViewById(R.id.backBtn);
-        ImageButton forwardBtn = findViewById(R.id.forwardBtn);
-        ImageButton refreshBtn = findViewById(R.id.refreshBtn);
+        fullscreenContainer = findViewById(R.id.fullscreenContainer);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -67,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
@@ -75,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setAllowFileAccessFromFileURLs(true);
         settings.setAllowUniversalAccessFromFileURLs(true);
 
-        // WebViewClient interne — TOUTE navigation reste dans le WebView
+        // Toute la navigation reste dans le WebView (seul WhatsApp sort de l'application).
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -88,25 +85,15 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                nativeBanner.setVisibility(url != null && (url.startsWith("https://") || url.startsWith("http://")) ? View.VISIBLE : View.GONE);
-            }
-
-            @Override
             public void onPageFinished(WebView view, String url) {
-                if (clearingHistory && url.startsWith("file:///android_asset/www/index.html")) {
+                if (clearingHistory && url != null && url.startsWith(LOCK_PAGE)) {
                     view.clearHistory();
                     clearingHistory = false;
                 }
             }
-
-            @Override
-            public void onPageCommitVisible(WebView view, String url) {
-                updateUrlDisplay(url);
-            }
         });
 
-        // WebChromeClient pour progress bar et titre
+        // Barre de progression + prise en charge du plein écran vidéo.
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -115,123 +102,102 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onReceivedTitle(WebView view, String title) {
-                if (title != null && !title.isEmpty()) {
-                    // Mettre à jour l'URL dans la barre si vide
-                    if (urlInput.getText().toString().isEmpty()) {
-                        updateUrlDisplay(webView.getUrl());
-                    }
-                }
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                enterFullscreen(view, callback);
             }
-        });
 
-        // Charger la page web locale
-        webView.loadUrl("file:///android_asset/www/index.html");
-
-        // Bouton GO
-        goBtn.setOnClickListener(v -> {
-            String url = urlInput.getText().toString().trim();
-            if (url.isEmpty()) {
-                url = "https://vod.talis.top/";
-            }
-            if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                url = "https://" + url;
-            }
-            webView.loadUrl(url);
-            hideBar();
-        });
-
-        // Bouton BACK
-        backBtn.setOnClickListener(v -> {
-            if (webView.canGoBack()) {
-                webView.goBack();
-            } else {
-                webView.loadUrl("file:///android_asset/www/index.html");
-            }
-        });
-
-        // Bouton FORWARD
-        forwardBtn.setOnClickListener(v -> {
-            if (webView.canGoForward()) {
-                webView.goForward();
-            }
-        });
-
-        // Bouton REFRESH
-        refreshBtn.setOnClickListener(v -> webView.reload());
-
-        // Bouton LOCK — retour à l'écran de code
-        lockBtn.setOnClickListener(v -> {
-            clearingHistory = true;
-            webView.loadUrl("file:///android_asset/www/index.html?lock=1");
-            urlInput.setText("");
-            hideBar();
-        });
-
-        // Barre d'acces : double appui simultane a deux doigts uniquement
-        webView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                float slop = 24f * getResources().getDisplayMetrics().density;
-
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                        if (event.getPointerCount() == 2) {
-                            twoFingerDown = true;
-                            twoFingerMoved = false;
-                            twoFingerStartMs = System.currentTimeMillis();
-                            twoFingerX = event.getX(0);
-                            twoFingerY = event.getY(0);
-                        }
-                        break;
-
-                    case MotionEvent.ACTION_MOVE:
-                        if (twoFingerDown) {
-                            if (Math.abs(event.getX(0) - twoFingerX) > slop
-                                    || Math.abs(event.getY(0) - twoFingerY) > slop) {
-                                twoFingerMoved = true;
-                            }
-                        }
-                        break;
-
-                    case MotionEvent.ACTION_POINTER_UP:
-                        if (twoFingerDown && event.getPointerCount() == 2) {
-                            long held = System.currentTimeMillis() - twoFingerStartMs;
-                            twoFingerDown = false;
-                            if (!twoFingerMoved && held < 450) {
-                                registerTwoFingerTap();
-                            }
-                        }
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        twoFingerDown = false;
-                        break;
-                }
-                // false : la WebView continue de gerer le defilement et les clics normalement
-                return false;
+            public void onHideCustomView() {
+                exitFullscreen();
             }
         });
+
+        // Page locale : écran de code.
+        webView.loadUrl(LOCK_PAGE);
+
+        // Rappel quotidien « C'est l'heure du visionnage ».
+        NotificationHelper.ensureChannel(this);
+        ReminderScheduler.schedule(this);
+        askNotificationPermission();
     }
 
-    // Deux appuis a deux doigts rapproches (< 650 ms) ouvrent/ferment la barre de recherche.
-    private void registerTwoFingerTap() {
-        long now = System.currentTimeMillis();
-        if (twoFingerTapLastMs != 0 && now - twoFingerTapLastMs <= 650) {
-            twoFingerTapLastMs = 0;
-            if (barVisible) {
-                hideBar();
-            } else {
-                showBar();
-            }
-            if (webView != null) {
-                webView.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-            }
-        } else {
-            twoFingerTapLastMs = now;
+    /** Android 13+ : la notification n'est possible qu'après l'accord de l'utilisateur. */
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) return;
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                NOTIFICATION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == NOTIFICATION_REQUEST_CODE) {
+            ReminderScheduler.schedule(this);
         }
     }
+
+    // ---------- Plein écran vidéo ----------
+
+    private void enterFullscreen(View view, WebChromeClient.CustomViewCallback callback) {
+        if (fullscreenView != null) {
+            // Un plein écran est déjà en cours : on refuse le second.
+            callback.onCustomViewHidden();
+            return;
+        }
+        fullscreenView = view;
+        fullscreenCallback = callback;
+
+        fullscreenContainer.addView(view, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        fullscreenContainer.setVisibility(View.VISIBLE);
+        webView.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.GONE);
+
+        orientationBeforeFullscreen = getRequestedOrientation();
+        // Laisse tourner l'écran librement : la vidéo s'affiche en paysage si l'appareil pivote.
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        hideSystemUi();
+    }
+
+    private void exitFullscreen() {
+        if (fullscreenView == null) return;
+
+        fullscreenContainer.removeView(fullscreenView);
+        fullscreenView = null;
+        fullscreenContainer.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
+
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setRequestedOrientation(orientationBeforeFullscreen);
+        showSystemUi();
+
+        if (fullscreenCallback != null) {
+            fullscreenCallback.onCustomViewHidden();
+            fullscreenCallback = null;
+        }
+    }
+
+    private void hideSystemUi() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
+    private void showSystemUi() {
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+    }
+
+    // ---------- Liens sortants ----------
 
     // WhatsApp est le seul lien sortant prévu : les autres pages restent dans la WebView.
     private boolean handleExternalLink(String url) {
@@ -242,56 +208,55 @@ public class MainActivity extends AppCompatActivity {
         try {
             startActivity(whatsapp);
         } catch (ActivityNotFoundException e) {
-            try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
-            catch (ActivityNotFoundException ignored) { return false; }
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            } catch (ActivityNotFoundException ignored) {
+                return false;
+            }
         }
         return true;
     }
 
-    private void updateUrlDisplay(String url) {
-        if (url != null && !url.isEmpty() && !url.startsWith("file://")) {
-            urlInput.setText(url);
-        }
-    }
-
-    private void showBar() {
-        barVisible = true;
-        topBar.animate().cancel();
-        topBar.setVisibility(View.VISIBLE);
-        topBar.animate().translationY(0).alpha(1).setDuration(250).start();
-        urlInput.setText(webView.getUrl());
-    }
-
-    private void hideBar() {
-        barVisible = false;
-        topBar.animate().translationY(-topBar.getHeight()).alpha(0).setDuration(250)
-                .withEndAction(() -> { if (!barVisible) topBar.setVisibility(View.GONE); }).start();
-    }
+    // ---------- Cycle de vie ----------
 
     @Override
     public void onBackPressed() {
-        if (barVisible) {
-            hideBar();
-        } else if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
+        if (fullscreenView != null) {
+            exitFullscreen();
+            return;
         }
+        String current = webView == null ? null : webView.getUrl();
+        boolean onLockPage = current != null && current.startsWith(LOCK_PAGE);
+
+        if (!onLockPage) {
+            if (webView.canGoBack()) {
+                webView.goBack();
+            } else {
+                // Retour à l'écran de code : plus de bouton de verrouillage dans l'interface.
+                clearingHistory = true;
+                webView.loadUrl(LOCK_PAGE + "?lock=1");
+            }
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (webView != null) {
-            webView.onResume();
-        }
+        if (webView != null) webView.onResume();
+        if (fullscreenView != null) hideSystemUi();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (webView != null) {
-            webView.onPause();
-        }
+        if (webView != null) webView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (fullscreenView != null) exitFullscreen();
+        super.onDestroy();
     }
 }

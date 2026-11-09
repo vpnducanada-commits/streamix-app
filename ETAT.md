@@ -53,3 +53,11 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - `app/build.gradle` : `versionCode 7`, `versionName "7.0"` — même certificat debug que la v6 (mise à jour sans désinstallation).
 - Release servie : `GET /api/release` → `{versionCode:7, versionName:"7.0", downloadUrl: Drive}` ; les v6 voient la bannière.
 - APK : https://drive.google.com/file/d/1a0f76OcC4GGTGgTrtPMOpiWMo3XzciNG/view (public, 3 513 236 o).
+
+## 2026-11-08 — v9/v10 natives
+
+- **Barre de recherche supprimée définitivement** : plus de `topBar` dans `activity_main.xml`, plus de `urlInput`/`goBtn`/`lockBtn`/geste à deux doigts dans le code natif, plus de `#topBar` dans la coque web (`www/index.html`). Retour à l'écran de code par le bouton Retour Android.
+- **Site en plein écran** : la bande de marque native de 56 dp est retirée, le WebView occupe tout l'écran, la barre de progression est superposée en haut (3 dp).
+- **Vidéo plein écran** : `WebChromeClient.onShowCustomView`/`onHideCustomView` implémentés avec `fullscreenContainer`, mode immersif, rotation libre (`SCREEN_ORIENTATION_SENSOR`), `FLAG_KEEP_SCREEN_ON`, `configChanges` élargi (pas de recréation d'activité en tournant le téléphone).
+- **Notifications** : permission `POST_NOTIFICATIONS` demandée au lancement (Android 13+), canal `streamix_rappels`, rappel quotidien « C'est l'heure du visionnage » à 20:00 via AlarmManager (`setAndAllowWhileIdle`, sans permission d'alarme exacte), reprogrammé par `ReminderReceiver` et `BootReceiver`.
+- APK v10 : `versionCode 10`, 3 515 154 o, certificat identique (v4→v10).

@@ -1,13 +1,12 @@
 // STREAMIX - les codes sont validés par le serveur, plus rien en local
 const API_BASE = 'https://streamix-app.vercel.app';
-const APP_VERSION_CODE = 8;
+const APP_VERSION_CODE = 10;
 const DEFAULT_URL = 'https://vod.talis.top/';
 let defaultUrl = DEFAULT_URL;
 let securityAnswer = '';
 let currentMainCode = '';
 let codes = [];
 let currentSession = null;
-let barVisible = false;
 let unlocking = false;
 
 // Identifiant d'appareil stable, au format attendu par le serveur (32 à 128 caractères).
@@ -73,9 +72,6 @@ try {
       if(lk) lk.style.display='none';
       const bv = document.getElementById('browserView');
       if(bv) bv.classList.remove('hidden');
-      const bar = document.getElementById('topBar');
-      if(bar) bar.classList.add('hidden-bar');
-      barVisible = false;
       updateSessionUI();
     } else {
       sessionStorage.removeItem('streamix_session');
@@ -228,10 +224,6 @@ function enterBrowser(codeObj){
   try{ sessionStorage.setItem('streamix_session', JSON.stringify(codeObj)); }catch(e){}
   updateSessionUI();
   loadUrl(codeObj.destination || DEFAULT_URL);
-  // Barre toujours masquée à l'entrée
-  const bar=document.getElementById('topBar');
-  if(bar) bar.classList.add('hidden-bar');
-  barVisible=false;
   // Afficher popup bienvenue
   const pop=document.getElementById('welcomePopup');
   if(pop) pop.classList.remove('hidden');
@@ -267,13 +259,6 @@ function loadUrl(url){
   const inp=document.getElementById('urlInput');
   if(inp) inp.value=url;
 }
-document.getElementById('goBtn').addEventListener('click', ()=> { const v=document.getElementById('urlInput').value.trim(); if(v) loadUrl(v); });
-document.getElementById('urlInput').addEventListener('keydown', e=>{ if(e.key==='Enter') { const v=e.target.value.trim(); if(v) loadUrl(v); }});
-document.getElementById('lockBtn').addEventListener('click', closeBrowser);
-document.getElementById('fullscreenBtn').addEventListener('click', ()=>{
-  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-  else document.exitFullscreen().catch(()=>{});
-});
 function closeBrowser(){
   const pop=document.getElementById('welcomePopup'); if(pop) pop.classList.remove('hidden');
   document.getElementById('browserView').classList.add('hidden');
@@ -285,38 +270,6 @@ function closeBrowser(){
   stopExpiryWatcher();
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
 }
-
-// Barre de recherche : visible uniquement par double appui simultané à deux doigts
-let lastTwoFingerTap = 0, twoFingerDown = false, twoFingerStart = 0;
-function toggleBar(){
-  barVisible=!barVisible;
-  const bar=document.getElementById('topBar');
-  if(barVisible) bar.classList.remove('hidden-bar');
-  else bar.classList.add('hidden-bar');
-  if(navigator.vibrate) navigator.vibrate(30);
-}
-function browserIsOpen(){
-  const bv=document.getElementById('browserView');
-  return !!bv && !bv.classList.contains('hidden');
-}
-document.addEventListener('touchstart', function(e){
-  if(e.touches.length === 2 && !twoFingerDown){ twoFingerDown = true; twoFingerStart = Date.now(); }
-}, {passive:true});
-document.addEventListener('touchend', function(e){
-  if(!twoFingerDown || e.touches.length !== 0) return;
-  twoFingerDown = false;
-  if(!browserIsOpen()) return;
-  const held = Date.now() - twoFingerStart;
-  if(held > 450) return;                 // appui long : ce n'est pas un appui
-  const now = Date.now();
-  if(lastTwoFingerTap && now - lastTwoFingerTap <= 650){
-    lastTwoFingerTap = 0;
-    toggleBar();
-  } else {
-    lastTwoFingerTap = now;
-  }
-}, {passive:true});
-document.addEventListener('touchcancel', function(){ twoFingerDown = false; }, {passive:true});
 
 // Modales
 document.getElementById('forgotBtn').addEventListener('click', ()=> openModal('forgotModal'));

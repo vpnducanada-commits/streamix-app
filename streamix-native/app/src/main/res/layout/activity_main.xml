@@ -1,139 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/black"
     android:fitsSystemWindows="true">
 
-    <!-- Bande de marque affichée sur les sites externes ; l’accueil local possède sa propre bande. -->
+    <!-- Le site occupe tout l'écran : plus de bande de marque ni de barre de recherche. -->
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Barre de progression discrète, superposée en haut -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_gravity="top"
+        android:progressTint="@color/red"
+        android:visibility="gone" />
+
+    <!-- Conteneur de lecture plein écran (vidéos) -->
     <FrameLayout
-        android:id="@+id/nativeBanner"
+        android:id="@+id/fullscreenContainer"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/black"
-        android:visibility="gone">
-        <ImageView
-            android:layout_width="140dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:src="@drawable/streamix_wordmark"
-            android:scaleType="fitCenter"
-            android:contentDescription="Streamix" />
-    </FrameLayout>
+        android:layout_height="match_parent"
+        android:background="#FF000000"
+        android:visibility="gone" />
 
-    <!-- Barre de navigation (masquée par défaut) -->
-    <LinearLayout
-        android:id="@+id/topBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_top_bar"
-        android:visibility="gone"
-        android:alpha="0"
-        android:translationY="-200dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:gravity="center_vertical">
-
-            <!-- Brand + session -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginEnd="8dp">
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_logo_mini"
-                    android:contentDescription="STREAMIX" />
-            </LinearLayout>
-
-            <!-- URL input -->
-            <EditText
-                android:id="@+id/urlInput"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_url_input"
-                android:hint="Saisir une URL ou chercher..."
-                android:textSize="13px"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#666666"
-                android:paddingStart="14dp"
-                android:paddingEnd="8dp"
-                android:singleLine="true"
-                android:imeOptions="actionGo"
-                android:inputType="textUri"
-                android:autofillHints="url" />
-
-            <!-- Bouton GO -->
-            <ImageButton
-                android:id="@+id/goBtn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/bg_go_btn"
-                android:src="@drawable/ic_go"
-                android:contentDescription="Aller" />
-
-            <!-- Boutons de navigation -->
-            <ImageButton
-                android:id="@+id/backBtn"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_icon_btn"
-                android:src="@drawable/ic_back"
-                android:contentDescription="Retour" />
-
-            <ImageButton
-                android:id="@+id/forwardBtn"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_icon_btn"
-                android:src="@drawable/ic_forward"
-                android:contentDescription="Suivant" />
-
-            <ImageButton
-                android:id="@+id/refreshBtn"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_icon_btn"
-                android:src="@drawable/ic_refresh"
-                android:contentDescription="Actualiser" />
-
-            <ImageButton
-                android:id="@+id/lockBtn"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_icon_btn"
-                android:src="@drawable/ic_lock"
-                android:contentDescription="Fermer" />
-        </LinearLayout>
-
-        <!-- Progress bar -->
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="match_parent"
-            android:layout_height="3dp"
-            android:progressTint="@color/red"
-            android:visibility="gone"
-            style="?android:attr/progressBarStyleHorizontal" />
-    </LinearLayout>
-
-    <!-- WebView — navigateur interne Streamix -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-        <WebView
-            android:id="@+id/webView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </FrameLayout>
-
-</LinearLayout>
+</FrameLayout>
