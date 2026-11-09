@@ -1,15 +1,22 @@
-import {query} from './_lib/db.js';
+const {sql} = require('./_lib/db.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  if (req.method !== 'GET') return res.status(405).json({error: 'method_not_allowed'});
+  if (req.method !== 'GET') {
+    res.status(405).json({error: 'method_not_allowed'});
+    return;
+  }
   try {
-    const rows = await query(
-      "SELECT count(*)::int AS tables FROM information_schema.tables WHERE table_schema = 'streamix'"
-    );
-    return res.status(200).json({ok: true, database: 'reachable', streamixTables: rows[0].tables});
+    const tables = await sql("SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema = 'streamix'");
+    const key = await sql("SELECT length(value)::int AS n FROM streamix.settings WHERE key = 'code_hmac_key'");
+    res.status(200).json({
+      ok: true,
+      database: 'reachable',
+      streamixTables: tables[0] ? tables[0].n : 0,
+      hmacKeyBytes: key[0] ? key[0].n : 0,
+    });
   } catch (error) {
     console.error('health_failed', error.message);
-    return res.status(503).json({ok: false, database: 'unreachable'});
+    res.status(503).json({ok: false, database: 'unreachable', detail: String(error.message).slice(0, 140)});
   }
-}
+};
