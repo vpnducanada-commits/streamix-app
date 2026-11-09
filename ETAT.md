@@ -90,3 +90,19 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - Permission `anyoneWithLink` supprimée sur v7, v8, v10, v11, v12 (`make_private` ne suffisait pas : la permission restait active sur les fichiers en corbeille, `delete_permission` a été nécessaire).
 - Vérifié : les 10 anciens liens renvoient une page d'erreur HTML, seul **v13** (`1H8lkzgGuwmQmjwVrBZVimY9EqVjLR9Q6`) reste téléchargeable.
 - Copies locales conservées dans `/home/user/` (v4→v13).
+
+## 2026-11-08 — v14 : couche d'animation complète
+
+- **Nouvelle couche web** `www/motion.css` + `www/motion.js` (objet global `window.MOTION`), chargée avant `app.js`.
+- **Splash d'ouverture** : logo Streamix qui apparaît puis pulse, ligne de lumière horizontale, texte « STREAMIX » en fondu. Disparaît de lui-même.
+- **Transitions d'écran** : après validation du code, rideau avec halo tournant et « Préparation de ton catalogue… » ; l'écran de code se retire (fondu + montée de 380 ms) et le navigateur arrive en zoom-fondu (`#browserView.browser-in`).
+- **Micro-interactions** : ripple au toucher sur tous les boutons, effet d'enfoncement, bouton « Valider » en état de chargement (spinner), secousse + halo rouge sur code refusé ou vide, coche verte animée sur succès.
+- **Apparition en cascade** : `.logo-area`, `.code-card`, `.admin-access-link`, `.whatsapp-buy` arrivent l'un après l'autre (`data-enter`). Listes (modales, panneau admin, utilisateurs) : chaque ligne apparaît en décalage de 45 ms (`--d`).
+- **Modales** : ouverture avec `.open` + contenu en stagger, fermeture animée.
+- **Toasts** : apparition glissée + sortie en fondu.
+- **Natif (`MainActivity.java`)** : fondu de page à chaque navigation WebView (alpha 0.15 → 1, garde anti-clignotement 1,4 s), barre de progression adoucie (fondu entrée/sortie), bande de marque qui glisse (−18 dp → 0), plein écran vidéo en fondu (`fullscreenContainer` alpha 0 → 1).
+- **Accessibilité** : toutes les animations sont désactivées sous `prefers-reduced-motion: reduce`.
+- APK v14 : `versionCode 14`, `versionName "14.0"`, 3 525 626 o, même certificat (mise à jour par-dessus la v13 sans désinstallation).
+- Release publiée : `POST /api/publish` → `{"published":14}` ; `GET /api/release` renvoie v14.
+- **Visuels UHD régénérés** avec le QR de la v14 (QR vérifié par décodage sur les fichiers re-téléchargés depuis Drive) : vertical 2160×3836 (`1vIXCFn0zWBHcTFhR8juR_-Od4Xh5l1nt`), carré 2160×2160 (`1V2liC63dbj8aY0ue2g-aMX9bUJPmtLwb`). Les anciens visuels (QR v13) et les affiches de test sont à la corbeille, accès public révoqué.
+- Drive ne contient plus qu'**un seul APK téléchargeable** : `Streamix-natif-v14.apk` (`1kRsv_UUAYwo95JuF1QikFsjkUs5NuP6o`).

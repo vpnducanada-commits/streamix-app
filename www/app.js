@@ -118,9 +118,10 @@ function daysLeft(c){
 function tryUnlock(){
   const raw = document.getElementById('codeInput').value.trim();
   const err = document.getElementById('codeError');
-  if(!raw){ showError('Entre ton code'); return; }
+  if(!raw){ showError('Entre ton code'); if(window.MOTION) MOTION.error(); return; }
   if(unlocking) return;
   unlocking = true;
+  if(window.MOTION) MOTION.btnLoading(true);
   err.style.color = '#9a9aa6';
   err.textContent = 'Vérification…';
   fetch(API_BASE + '/api/redeem', {
@@ -131,6 +132,7 @@ function tryUnlock(){
     return r.json().catch(function(){ return {}; }).then(function(b){ return {s:r.status, b:b}; });
   }).then(function(res){
     unlocking = false;
+    if(window.MOTION) MOTION.btnLoading(false);
     err.style.color = '#ff8a8f';
     if(res.s === 200 && res.b && res.b.ok){
       err.style.color = '#00d084';
@@ -139,7 +141,14 @@ function tryUnlock(){
       const session = {code: raw.toUpperCase(), name:'Accès', destination: res.b.destination,
                     validUntil: res.b.validUntil, expiresAt: expire, deviceLimit:'∞', type:'server'};
       sparkleBurst();
-      window.setTimeout(function(){ enterBrowser(session); }, 700);
+      if(window.MOTION){
+        MOTION.success();
+        window.setTimeout(function(){
+          MOTION.curtain('Préparation de ton catalogue…').then(function(){ enterBrowser(session); });
+        }, 780);
+      } else {
+        window.setTimeout(function(){ enterBrowser(session); }, 700);
+      }
       return;
     }
     const reason = res.b && res.b.reason;
@@ -152,8 +161,10 @@ function tryUnlock(){
     }
     showError('⛔ ' + msg);
     shakeInput();
+    if(window.MOTION) MOTION.error();
   }).catch(function(){
     unlocking = false;
+    if(window.MOTION) MOTION.btnLoading(false);
     err.style.color = '#ff8a8f';
     showError('⛔ Serveur injoignable. Vérifie ta connexion internet.');
   });
@@ -218,8 +229,14 @@ function sparkleBurst(){
 }
 
 function enterBrowser(codeObj){
-  document.getElementById('lockScreen').style.display='none';
-  document.getElementById('browserView').classList.remove('hidden');
+  const ls=document.getElementById('lockScreen');
+  if(ls){ ls.classList.add('leaving'); }
+  window.setTimeout(function(){
+    if(ls) ls.style.display='none';
+    const bv=document.getElementById('browserView');
+    if(bv){ bv.classList.remove('hidden'); bv.classList.add('browser-in'); }
+    if(window.MOTION) MOTION.curtainOff();
+  }, 380);
   currentSession=codeObj;
   try{ sessionStorage.setItem('streamix_session', JSON.stringify(codeObj)); }catch(e){}
   updateSessionUI();
@@ -287,15 +304,33 @@ function tryAdminLogin(){
   document.getElementById('adminLoginModal').classList.add('hidden');
   showToast('Admin : streamix-app.vercel.app/admin.html');
 }
-function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function openModal(id){
+  const m=document.getElementById(id); if(!m) return;
+  m.classList.remove('hidden');
+  requestAnimationFrame(function(){ m.classList.add('open'); });
+  const box=m.querySelector('.modal-box');
+  if(box) Array.from(box.children).forEach(function(c,i){
+    c.classList.add('stagger'); c.style.setProperty('--d',(70+i*45)+'ms');
+  });
+}
 function closeModal(type){
+  const mm=document.getElementById(type==='forgot'?'forgotModal':'adminLoginModal');
+  if(mm){ mm.classList.remove('open'); setTimeout(function(){ mm.classList.add('hidden'); },250); }
   if(type==='forgot'){ document.getElementById('forgotModal').classList.add('hidden'); document.getElementById('forgotAnswer').value=''; document.getElementById('forgotError').textContent=''; document.getElementById('forgotSuccess').classList.remove('show'); }
   if(type==='adminLogin'){ document.getElementById('adminLoginModal').classList.add('hidden'); document.getElementById('adminLoginError').textContent=''; }
 }
 document.querySelectorAll('[data-close]').forEach(b=> b.addEventListener('click', ()=> closeModal(b.dataset.close)) );
 document.querySelectorAll('.modal-backdrop').forEach(b=> b.addEventListener('click', ()=> closeModal(b.dataset.close)) );
-function openAdminPanel(){ document.getElementById('adminPanel').classList.remove('hidden'); }
-function closeAdminPanel(){ document.getElementById('adminPanel').classList.add('hidden'); }
+function openAdminPanel(){
+  const p=document.getElementById('adminPanel'); if(!p) return;
+  p.classList.remove('hidden');
+  requestAnimationFrame(function(){ p.classList.add('open'); });
+}
+function closeAdminPanel(){
+  const p=document.getElementById('adminPanel'); if(!p) return;
+  p.classList.remove('open');
+  setTimeout(function(){ p.classList.add('hidden'); },240);
+}
 document.getElementById('closeAdmin').addEventListener('click', closeAdminPanel);
 document.getElementById('adminBackdrop').addEventListener('click', closeAdminPanel);
 document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -332,14 +367,14 @@ function updateUsersList(){
   if(codes.length===0){
     list.innerHTML=`<div style="text-align:center;padding:18px;color:#555;font-size:12px;border:1px dashed #222;border-radius:12px">Aucun code</div>`;
   } else {
-    list.innerHTML=codes.map(c=>{
+    list.innerHTML=codes.map((c,i)=>{
       const status=getStatus(c);
       const badgeClass=status==='active'?'badge-active':status==='expired'?'badge-expired':'badge-limit';
       const badgeText=status==='active'?'Actif':status==='expired'?'Expiré':'Limite';
       const limitTxt=c.deviceLimit==='illimite'?'∞':c.deviceLimit;
       const usedTxt=(c.devices||[]).length;
       return `
-        <div class="user-item">
+        <div class="user-item" style="--d:${i*45}ms">
           <div class="user-top">
             <div class="user-avatar">${c.name.slice(0,2).toUpperCase()}</div>
             <div class="user-info"><strong>${c.code}</strong><span>${c.name}</span></div>
@@ -383,6 +418,7 @@ function startExpiryWatcher(){
 }
 function stopExpiryWatcher(){ if(watcher){ clearInterval(watcher); watcher=null; } }
 function showToast(msg){
+  if(window.MOTION){ MOTION.toast(msg); return; }
   let t=document.getElementById('toast');
   if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid #333;z-index:999;box-shadow:0 8px 20px rgba(0,0,0,0.4)'; document.body.appendChild(t); }
   t.textContent=msg; t.style.display='block'; t.style.opacity='1';

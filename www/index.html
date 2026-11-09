@@ -7,8 +7,15 @@
 <title>Streamix</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="motion.css">
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="splash-glow"></div>
+  <img src="logo-streamix-play.png" class="splash-mark" alt="Streamix">
+  <div class="splash-line"></div>
+  <div class="splash-txt">STREAMING 241</div>
+</div>
 <header class="streamix-banner"><img src="streamix-wordmark.png" alt="Streamix"></header>
 
 <!-- ACCÈS DYNAMIQUE -->
@@ -24,7 +31,7 @@
   <div id="nameAppearance" class="name-appearance" aria-hidden="true"></div>
 
   <div class="lock-container">
-    <div class="logo-area">
+    <div class="logo-area" data-enter>
       <div class="logo-halo" aria-hidden="true"></div>
       <div class="logo-icon pulse-logo"><svg width="42" height="42" viewBox="0 0 42 42" fill="none"><path d="M21 5L35.5 12.5V28L21 35.5L6.5 28V12.5L21 5Z" stroke="#E50914" stroke-width="2.5" fill="rgba(229,9,20,0.15)"/><path d="M17 14L26 21L17 28V14Z" fill="#E50914"/></svg></div>
       <div class="logo-wrap">
@@ -32,7 +39,7 @@
       </div>
       <div class="logo-underline"></div>
     </div>
-    <div class="code-card shimmer-card">
+    <div class="code-card shimmer-card" data-enter>
       <div class="card-glow"></div>
       <div class="code-input-wrapper">
         <input type="password" id="codeInput" placeholder="Code d'accès" autocomplete="off" spellcheck="false">
@@ -43,8 +50,8 @@
       <div id="codeError" class="error-msg"></div>
       <button class="forgot-link" id="forgotBtn">Code oublié ?</button>
     </div>
-    <button class="admin-access-link blink-admin" id="adminAccessLink">Administration</button>
-    <a class="whatsapp-buy" href="https://wa.me/24166196414?text=Bonjour%2C%20je%20souhaite%20acheter%20un%20code%20Streamix." aria-label="Acheter un code sur WhatsApp"><span aria-hidden="true">✆</span> Acheter un code sur WhatsApp</a>
+    <button class="admin-access-link blink-admin" id="adminAccessLink" data-enter>Administration</button>
+    <a class="whatsapp-buy" data-enter href="https://wa.me/24166196414?text=Bonjour%2C%20je%20souhaite%20acheter%20un%20code%20Streamix." aria-label="Acheter un code sur WhatsApp"><span aria-hidden="true">✆</span> Acheter un code sur WhatsApp</a>
   </div>
 </div>
 
@@ -125,6 +132,7 @@
   </div>
 </div>
 
+<script src="motion.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

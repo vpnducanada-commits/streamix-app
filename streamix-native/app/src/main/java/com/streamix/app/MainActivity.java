@@ -91,15 +91,23 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
                 updateSiteChrome(url);
+                // Fondu doux entre deux pages du site (jamais sur l'écran de code local).
+                if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                    view.animate().cancel();
+                    view.animate().alpha(0.15f).setDuration(140).start();
+                    pageFadeGuard(view);
+                }
             }
 
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 updateSiteChrome(url);
+                fadeInPage(view);
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
+                fadeInPage(view);
                 if (clearingHistory && url != null && url.startsWith(LOCK_PAGE)) {
                     view.clearHistory();
                     clearingHistory = false;
@@ -111,8 +119,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
-                progressBar.setProgress(newProgress);
-                progressBar.setVisibility(newProgress == 100 ? View.GONE : View.VISIBLE);
+                animateProgress(newProgress);
             }
 
             @Override
@@ -133,6 +140,68 @@ public class MainActivity extends AppCompatActivity {
         NotificationHelper.ensureChannel(this);
         ReminderScheduler.schedule(this);
         askNotificationPermission();
+    }
+
+    // ---------- Animations d'interface ----------
+
+    private android.os.Handler uiHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable pageFadeGuardRun;
+
+    /** Fondu d'apparition du contenu d'une page. */
+    private void fadeInPage(View view) {
+        if (view == null) return;
+        if (pageFadeGuardRun != null) uiHandler.removeCallbacks(pageFadeGuardRun);
+        view.animate().cancel();
+        view.animate().alpha(1f).setDuration(260).start();
+    }
+
+    /** Filet de sécurité : le contenu ne doit jamais rester invisible. */
+    private void pageFadeGuard(View view) {
+        if (pageFadeGuardRun != null) uiHandler.removeCallbacks(pageFadeGuardRun);
+        pageFadeGuardRun = new Runnable() {
+            @Override public void run() { fadeInPage(view); }
+        };
+        uiHandler.postDelayed(pageFadeGuardRun, 1400);
+    }
+
+    /** Barre de chargement : apparition et disparition en fondu, sans saut. */
+    private void animateProgress(int newProgress) {
+        if (progressBar == null) return;
+        progressBar.setProgress(newProgress);
+        if (newProgress < 100) {
+            if (progressBar.getVisibility() != View.VISIBLE) {
+                progressBar.setAlpha(0f);
+                progressBar.setVisibility(View.VISIBLE);
+                progressBar.animate().alpha(1f).setDuration(180).start();
+            }
+        } else {
+            progressBar.animate().alpha(0f).setDuration(240).withEndAction(new Runnable() {
+                @Override public void run() {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                }
+            }).start();
+        }
+    }
+
+    /** Apparition de la bande de marque en haut. */
+    private void animateChrome(boolean show) {
+        View[] views = new View[]{nativeBanner, siteOverlay};
+        for (View v : views) {
+            if (v == null) continue;
+            v.animate().cancel();
+            if (show) {
+                if (v.getVisibility() != View.VISIBLE) {
+                    v.setAlpha(0f);
+                    v.setTranslationY(-18f);
+                    v.setVisibility(View.VISIBLE);
+                    v.animate().alpha(1f).translationY(0f).setDuration(320).start();
+                }
+            } else {
+                v.animate().alpha(0f).setDuration(220).withEndAction(new Runnable() {
+                    @Override public void run() { v.setVisibility(View.GONE); v.setAlpha(1f); }
+                }).start();
+            }
+        }
     }
 
     /** Android 13+ : la notification n'est possible qu'après l'accord de l'utilisateur. */
@@ -161,9 +230,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateSiteChrome(String url) {
         boolean remote = url != null && (url.startsWith("http://") || url.startsWith("https://"));
         boolean show = remote && fullscreenView == null;
-        int visibility = show ? View.VISIBLE : View.GONE;
-        if (nativeBanner != null) nativeBanner.setVisibility(visibility);
-        if (siteOverlay != null) siteOverlay.setVisibility(visibility);
+        animateChrome(show);
     }
 
     // ---------- Plein écran vidéo ----------
@@ -180,7 +247,9 @@ public class MainActivity extends AppCompatActivity {
         fullscreenContainer.addView(view, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+        fullscreenContainer.setAlpha(0f);
         fullscreenContainer.setVisibility(View.VISIBLE);
+        fullscreenContainer.animate().alpha(1f).setDuration(220).start();
         webView.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.GONE);
         // La bande de marque et le filigrane disparaissent pendant la lecture.
