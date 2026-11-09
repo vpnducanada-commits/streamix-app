@@ -405,12 +405,12 @@ window.deleteCode=deleteCode;
 (function animateNames(){
   const label = document.getElementById('nameAppearance');
   if (!label) return;
-  const names = ['Godson', 'Peter'];
+  const names = ['Gédéon', 'Peter'];
   let index = 0;
   function showNext() {
     label.classList.remove('visible-name');
     label.textContent = names[index++ % names.length];
-    label.style.left = (8 + Math.random() * 72) + '%';
+    label.style.left = (8 + Math.random() * 65) + '%';
     label.style.top = (10 + Math.random() * 75) + '%';
     void label.offsetWidth;
     label.classList.add('visible-name');

@@ -192,9 +192,9 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 .whatsapp-buy{display:flex;justify-content:center;align-items:center;gap:9px;text-decoration:none;text-align:center;color:#fff;font-weight:700;font-size:13px;border:1px solid rgba(229,9,20,.6);background:linear-gradient(135deg,#260608,#b10712);border-radius:14px;padding:13px 16px;box-shadow:0 5px 20px rgba(229,9,20,.15);animation:whatsappGlow 3s ease-in-out infinite}
 .whatsapp-buy span{font-size:19px;line-height:1}
 @keyframes whatsappGlow{0%,100%{box-shadow:0 5px 18px rgba(229,9,20,.16)}50%{box-shadow:0 5px 25px rgba(229,9,20,.4)}}
-.name-appearance{position:absolute;z-index:1;color:#fff;opacity:0;font-size:clamp(16px,4vw,24px);font-weight:700;letter-spacing:.08em;pointer-events:none;white-space:nowrap}
+.name-appearance{position:absolute;z-index:1;color:#fff;opacity:0;font-size:clamp(16px,4vw,24px);font-weight:700;letter-spacing:.08em;pointer-events:none;white-space:nowrap;text-shadow:0 0 6px rgba(255,255,255,.7),0 0 16px rgba(229,9,20,.9),0 0 30px rgba(229,9,20,.5)}
 .name-appearance.visible-name{animation:nameFade 5s ease-in-out both !important}
-@keyframes nameFade{0%,100%{opacity:0}30%,70%{opacity:.16}}
+@keyframes nameFade{0%,100%{opacity:0}30%,70%{opacity:.55}}
 .modal-overlay,.admin-panel{padding-top:72px}
 .browser-view{top:56px}
 @media (prefers-reduced-motion: reduce){.whatsapp-buy,.name-appearance.visible-name,.color-blink-overlay{animation:none !important}}
