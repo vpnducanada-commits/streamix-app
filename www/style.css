@@ -174,8 +174,45 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 .logo-wrap .main-logo{position:relative;z-index:3}
 .blink-logo{animation:blinkColor 3.5s ease-in-out infinite}
 
-/* Interface statique : seul l’overlay lumineux conserve son animation. */
-#lockScreen *:not(.color-blink-overlay):not(.whatsapp-buy):not(.name-appearance){animation:none !important}
+/* === Animations : effets plein écran coûteux figés, FX légers (transform/opacity) actifs === */
+#lockScreen .animated-bg,#lockScreen .glow-1,#lockScreen .glow-2,#lockScreen .glow-3,#lockScreen .grid-overlay,#lockScreen .light-sweep,#lockScreen .shimmer-card,#lockScreen .pulse-logo,#lockScreen .card-glow,#lockScreen .super-btn,#lockScreen .lock-container{animation:none !important}
+
+/* Étincelles */
+.sparkles{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.spark{position:absolute;width:var(--s,6px);height:var(--s,6px);opacity:0;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(255,150,160,.95) 35%,rgba(229,9,20,0) 72%);animation:sparkTwinkle var(--d,3.2s) ease-in-out infinite;will-change:opacity,transform}
+.spark.big{background:none}
+.spark.big::before,.spark.big::after{content:'';position:absolute;background:linear-gradient(transparent,#fff,transparent);border-radius:2px;box-shadow:0 0 6px rgba(255,255,255,.9)}
+.spark.big::before{left:50%;top:0;width:1.5px;height:100%;transform:translateX(-50%)}
+.spark.big::after{top:50%;left:0;height:1.5px;width:100%;transform:translateY(-50%)}
+@keyframes sparkTwinkle{0%,100%{opacity:0;transform:translateY(0) scale(.2)}30%{opacity:1;transform:translateY(-6px) scale(1)}48%{opacity:.9;transform:translateY(-9px) scale(.85)}66%{opacity:0;transform:translateY(-14px) scale(.3)}}
+
+/* Halo respirant derrière le logo */
+.logo-halo{position:absolute;left:50%;top:50%;width:180px;height:180px;margin:-90px 0 0 -90px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(229,9,20,.55),rgba(229,9,20,0) 68%);filter:blur(10px);animation:haloBreath 4.4s ease-in-out infinite;will-change:opacity,transform}
+@keyframes haloBreath{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.85;transform:scale(1.12)}}
+
+/* Balayage lumineux de la carte */
+.code-card::after{content:'';position:absolute;top:-40%;left:0;width:38%;height:180%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,255,255,.075),transparent);transform:rotate(16deg) translateX(-160%);animation:cardSheen 6s ease-in-out infinite}
+@keyframes cardSheen{0%{transform:rotate(16deg) translateX(-160%)}55%,100%{transform:rotate(16deg) translateX(520%)}}
+
+/* Soulignement du logo : scaleX (aucun recalcul de mise en page) */
+#lockScreen .logo-underline{transform-origin:center;animation:underlineGlow 2.6s ease-in-out infinite}
+@keyframes underlineGlow{0%,100%{opacity:.45;transform:scaleX(.7)}50%{opacity:1;transform:scaleX(1.7)}}
+
+/* Éclats de validation */
+.fx-layer{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:600}
+.fx-layer .ring{position:absolute;left:-70px;top:-70px;width:140px;height:140px;border-radius:50%;border:2px solid rgba(255,255,255,.55);box-shadow:0 0 22px rgba(229,9,20,.65);animation:ringOut .9s cubic-bezier(.2,.7,.3,1) forwards}
+.fx-layer .ring.delay{animation-delay:.12s;border-color:rgba(229,9,20,.75)}
+@keyframes ringOut{0%{opacity:.95;transform:scale(.25)}100%{opacity:0;transform:scale(1.9)}}
+.fx-layer i{position:absolute;left:-2px;top:-2px;width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.95),0 0 16px rgba(229,9,20,.9);animation:burstFly .95s cubic-bezier(.15,.72,.25,1) forwards}
+@keyframes burstFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x,0),var(--y,0)) scale(.15)}}
+
+/* Secousse en cas de code refusé */
+.shake{animation:shakeX .45s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes shakeX{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-5px)}40%,60%{transform:translateX(5px)}}
+
+/* Confirmation verte sur la carte */
+.code-card.card-ok{animation:cardOk .9s ease-out}
+@keyframes cardOk{0%{box-shadow:0 0 0 0 rgba(0,214,132,.55)}100%{box-shadow:0 0 0 28px rgba(0,214,132,0)}}
 .browser-watermark{position:absolute;right:12px;bottom:12px;z-index:3;pointer-events:none;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 6px}
 .browser-watermark img{display:block;width:72px;height:24px;object-fit:contain}
 .admin-brand{width:100px;height:28px;object-fit:contain;object-position:left center;display:block}
@@ -197,4 +234,4 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 @keyframes nameFade{0%,100%{opacity:0}30%,70%{opacity:.55}}
 .modal-overlay,.admin-panel{padding-top:72px}
 .browser-view{top:56px}
-@media (prefers-reduced-motion: reduce){.whatsapp-buy,.name-appearance.visible-name,.color-blink-overlay{animation:none !important}}
+@media (prefers-reduced-motion: reduce){.whatsapp-buy,.name-appearance.visible-name,.color-blink-overlay,.spark,.logo-halo,.code-card::after,.fx-layer i,.fx-layer .ring,#lockScreen .logo-underline{animation:none !important}}

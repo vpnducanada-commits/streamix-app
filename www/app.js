@@ -1,6 +1,6 @@
 // STREAMIX - les codes sont validés par le serveur, plus rien en local
 const API_BASE = 'https://streamix-app.vercel.app';
-const APP_VERSION_CODE = 7;
+const APP_VERSION_CODE = 8;
 const DEFAULT_URL = 'https://vod.talis.top/';
 let defaultUrl = DEFAULT_URL;
 let securityAnswer = '';
@@ -137,10 +137,13 @@ function tryUnlock(){
     unlocking = false;
     err.style.color = '#ff8a8f';
     if(res.s === 200 && res.b && res.b.ok){
-      err.textContent = '';
+      err.style.color = '#00d084';
+      err.textContent = '✓ Accès autorisé';
       const expire = parseValidUntil(res.b.validUntil);
-      enterBrowser({code: raw.toUpperCase(), name:'Accès', destination: res.b.destination,
-                    validUntil: res.b.validUntil, expiresAt: expire, deviceLimit:'∞', type:'server'});
+      const session = {code: raw.toUpperCase(), name:'Accès', destination: res.b.destination,
+                    validUntil: res.b.validUntil, expiresAt: expire, deviceLimit:'∞', type:'server'};
+      sparkleBurst();
+      window.setTimeout(function(){ enterBrowser(session); }, 700);
       return;
     }
     const reason = res.b && res.b.reason;
@@ -160,7 +163,63 @@ function tryUnlock(){
   });
 }
 function showError(msg){ document.getElementById('codeError').textContent=msg; }
-function shakeInput(){ const i=document.getElementById('codeInput'); i.style.borderColor='#ff3b30'; setTimeout(()=>i.style.borderColor='#2a2a2a',1200); }
+function shakeInput(){
+  const i=document.getElementById('codeInput');
+  const w=document.querySelector('.code-input-wrapper');
+  i.style.borderColor='#ff3b30';
+  if(w){ w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake'); }
+  setTimeout(()=>{ i.style.borderColor='#2a2a2a'; if(w) w.classList.remove('shake'); },1200);
+}
+
+// ---------- Étincelles du fond ----------
+function initSparkles(){
+  const host=document.getElementById('sparkles');
+  if(!host || host.dataset.ready) return;
+  host.dataset.ready='1';
+  const total = window.innerWidth < 420 ? 16 : 24;
+  for(let k=0;k<total;k++){
+    const s=document.createElement('span');
+    const big = (k % 6 === 0);
+    s.className = 'spark' + (big ? ' big' : '');
+    const size = big ? 10 + Math.random()*5 : 4 + Math.random()*4;
+    s.style.setProperty('--s', size.toFixed(1)+'px');
+    s.style.left = (2 + Math.random()*94).toFixed(2)+'%';
+    s.style.top  = (6 + Math.random()*88).toFixed(2)+'%';
+    s.style.setProperty('--d', (2.4 + Math.random()*3.2).toFixed(2)+'s');
+    s.style.animationDelay = (-Math.random()*4.5).toFixed(2)+'s';
+    host.appendChild(s);
+  }
+}
+initSparkles();
+
+// ---------- Explosion d'étincelles à la validation ----------
+function sparkleBurst(){
+  const card=document.querySelector('.code-card');
+  const anchor=card || document.getElementById('lockScreen');
+  if(!anchor || !document.body) return;
+  if(card){ card.classList.remove('card-ok'); void card.offsetWidth; card.classList.add('card-ok'); }
+  const r=anchor.getBoundingClientRect();
+  const layer=document.createElement('div');
+  layer.className='fx-layer';
+  layer.style.left=(r.left + r.width/2)+'px';
+  layer.style.top =(r.top + r.height/2)+'px';
+  const ring1=document.createElement('div'); ring1.className='ring';
+  const ring2=document.createElement('div'); ring2.className='ring delay';
+  layer.appendChild(ring1); layer.appendChild(ring2);
+  const n = window.innerWidth < 420 ? 18 : 26;
+  for(let k=0;k<n;k++){
+    const dot=document.createElement('i');
+    const ang=Math.random()*Math.PI*2;
+    const dist=60 + Math.random()*130;
+    dot.style.setProperty('--x', (Math.cos(ang)*dist).toFixed(1)+'px');
+    dot.style.setProperty('--y', (Math.sin(ang)*dist).toFixed(1)+'px');
+    dot.style.animationDelay=(Math.random()*0.12).toFixed(2)+'s';
+    layer.appendChild(dot);
+  }
+  document.body.appendChild(layer);
+  window.setTimeout(function(){ layer.remove(); }, 1500);
+  if(navigator.vibrate) navigator.vibrate(25);
+}
 
 function enterBrowser(codeObj){
   document.getElementById('lockScreen').style.display='none';
@@ -227,8 +286,8 @@ function closeBrowser(){
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
 }
 
-// Geste 3 doigts (sans indication visuelle)
-let lastTouchTime=0;
+// Barre de recherche : visible uniquement par double appui simultané à deux doigts
+let lastTwoFingerTap = 0, twoFingerDown = false, twoFingerStart = 0;
 function toggleBar(){
   barVisible=!barVisible;
   const bar=document.getElementById('topBar');
@@ -236,9 +295,28 @@ function toggleBar(){
   else bar.classList.add('hidden-bar');
   if(navigator.vibrate) navigator.vibrate(30);
 }
-document.addEventListener('touchstart', e=>{
-  if(e.touches.length===3){ e.preventDefault(); const now=Date.now(); if(now-lastTouchTime>400){ lastTouchTime=now; toggleBar(); } }
-},{passive:false});
+function browserIsOpen(){
+  const bv=document.getElementById('browserView');
+  return !!bv && !bv.classList.contains('hidden');
+}
+document.addEventListener('touchstart', function(e){
+  if(e.touches.length === 2 && !twoFingerDown){ twoFingerDown = true; twoFingerStart = Date.now(); }
+}, {passive:true});
+document.addEventListener('touchend', function(e){
+  if(!twoFingerDown || e.touches.length !== 0) return;
+  twoFingerDown = false;
+  if(!browserIsOpen()) return;
+  const held = Date.now() - twoFingerStart;
+  if(held > 450) return;                 // appui long : ce n'est pas un appui
+  const now = Date.now();
+  if(lastTwoFingerTap && now - lastTwoFingerTap <= 650){
+    lastTwoFingerTap = 0;
+    toggleBar();
+  } else {
+    lastTwoFingerTap = now;
+  }
+}, {passive:true});
+document.addEventListener('touchcancel', function(){ twoFingerDown = false; }, {passive:true});
 
 // Modales
 document.getElementById('forgotBtn').addEventListener('click', ()=> openModal('forgotModal'));

@@ -29,12 +29,15 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ImageButton lockBtn;
     private SharedPreferences prefs;
-    private float touchStartY;
-    private float touchStartX;
     private boolean barVisible = false;
-    private boolean gestureActive = false;
     private boolean clearingHistory = false;
-    private long lastTouchTime = 0;
+    // Geste d'ouverture de la barre : double appui simultane a deux doigts
+    private boolean twoFingerDown = false;
+    private boolean twoFingerMoved = false;
+    private long twoFingerStartMs = 0;
+    private long twoFingerTapLastMs = 0;
+    private float twoFingerX = 0f;
+    private float twoFingerY = 0f;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -165,49 +168,69 @@ public class MainActivity extends AppCompatActivity {
             hideBar();
         });
 
-        // Geste 3 doigts pour basculer la barre
+        // Barre d'acces : double appui simultane a deux doigts uniquement
         webView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getActionMasked();
+                float slop = 24f * getResources().getDisplayMetrics().density;
 
-                switch (action) {
-                    case MotionEvent.ACTION_DOWN:
-                        touchStartX = event.getX();
-                        touchStartY = event.getY();
-                        gestureActive = false;
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        if (event.getPointerCount() == 2) {
+                            twoFingerDown = true;
+                            twoFingerMoved = false;
+                            twoFingerStartMs = System.currentTimeMillis();
+                            twoFingerX = event.getX(0);
+                            twoFingerY = event.getY(0);
+                        }
                         break;
 
                     case MotionEvent.ACTION_MOVE:
-                        if (event.getPointerCount() >= 3 && !gestureActive) {
-                            // 3 doigts — basculer la barre
-                            if (!barVisible) {
-                                showBar();
-                            } else {
-                                hideBar();
+                        if (twoFingerDown) {
+                            if (Math.abs(event.getX(0) - twoFingerX) > slop
+                                    || Math.abs(event.getY(0) - twoFingerY) > slop) {
+                                twoFingerMoved = true;
                             }
-                            gestureActive = true;
-                            return true;
+                        }
+                        break;
+
+                    case MotionEvent.ACTION_POINTER_UP:
+                        if (twoFingerDown && event.getPointerCount() == 2) {
+                            long held = System.currentTimeMillis() - twoFingerStartMs;
+                            twoFingerDown = false;
+                            if (!twoFingerMoved && held < 450) {
+                                registerTwoFingerTap();
+                            }
                         }
                         break;
 
                     case MotionEvent.ACTION_UP:
-                        // Double tap pour basculer la barre (si pas de geste)
-                        if (!gestureActive && event.getPointerCount() == 1) {
-                            long now = System.currentTimeMillis();
-                            if (lastTouchTime != 0 && now - lastTouchTime < 300) {
-                                if (barVisible) hideBar();
-                                else showBar();
-                                lastTouchTime = 0;
-                            } else {
-                                lastTouchTime = now;
-                            }
-                        }
+                    case MotionEvent.ACTION_CANCEL:
+                        twoFingerDown = false;
                         break;
                 }
+                // false : la WebView continue de gerer le defilement et les clics normalement
                 return false;
             }
         });
+    }
+
+    // Deux appuis a deux doigts rapproches (< 650 ms) ouvrent/ferment la barre de recherche.
+    private void registerTwoFingerTap() {
+        long now = System.currentTimeMillis();
+        if (twoFingerTapLastMs != 0 && now - twoFingerTapLastMs <= 650) {
+            twoFingerTapLastMs = 0;
+            if (barVisible) {
+                hideBar();
+            } else {
+                showBar();
+            }
+            if (webView != null) {
+                webView.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
+            }
+        } else {
+            twoFingerTapLastMs = now;
+        }
     }
 
     // WhatsApp est le seul lien sortant prévu : les autres pages restent dans la WebView.
