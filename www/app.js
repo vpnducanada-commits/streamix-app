@@ -454,10 +454,17 @@ window.deleteCode=deleteCode;
   function showNext() {
     label.classList.remove('visible-name');
     label.textContent = names[index++ % names.length];
-    // Les prénoms restent dans les marges : jamais par-dessus le logo ni la carte du code.
+    // Les prénoms restent dans les marges : jamais par-dessus le logo, la carte
+    // du code, ni coupés par le bord de l'écran.
     const right = Math.random() < 0.5;
-    label.style.left = (right ? 64 + Math.random() * 12 : 2 + Math.random() * 12).toFixed(1) + '%';
-    label.style.top = (9 + Math.random() * 46).toFixed(1) + '%';
+    if (right) {
+      label.style.left = 'auto';
+      label.style.right = (3 + Math.random() * 9).toFixed(1) + '%';
+    } else {
+      label.style.right = 'auto';
+      label.style.left = (2 + Math.random() * 9).toFixed(1) + '%';
+    }
+    label.style.top = (9 + Math.random() * 16).toFixed(1) + '%';
     void label.offsetWidth;
     label.classList.add('visible-name');
     window.setTimeout(showNext, 5500 + Math.random() * 1800);

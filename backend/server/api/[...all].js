@@ -222,6 +222,18 @@ module.exports=async function handler(req,res){
    res.status(405).json({error:'method_not_allowed'});
    return;
   }
+  if(path==='/download'){
+   // Lien permanent : redirige toujours vers l'APK de la dernière version publiée.
+   // Les QR codes des affiches ne sont donc plus jamais à refaire.
+   const rows=await sql('SELECT download_url FROM streamix.releases ORDER BY version_code DESC LIMIT 1');
+   const dest=rows[0]&&rows[0].download_url;
+   if(!dest){res.status(404).json({error:'no_release'});return;}
+   res.statusCode=302;
+   res.setHeader('Location',dest);
+   res.setHeader('Cache-Control','no-store');
+   res.end();
+   return;
+  }
   if(path==='/publish'){
    if(!(await isAdmin(req,res)))return;
    await publishRelease(req,res);
