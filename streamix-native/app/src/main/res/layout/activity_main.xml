@@ -2,26 +2,92 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
-    android:fitsSystemWindows="true">
+    android:background="@color/black">
 
-    <!-- Le site occupe tout l'écran : plus de bande de marque ni de barre de recherche. -->
-    <WebView
-        android:id="@+id/webView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true">
 
-    <!-- Barre de progression discrète, superposée en haut -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:layout_gravity="top"
-        android:progressTint="@color/red"
-        android:visibility="gone" />
+        <!-- Bande de marque : logo centré, visible sur les pages du site uniquement -->
+        <FrameLayout
+            android:id="@+id/nativeBanner"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@color/black"
+            android:visibility="gone">
 
-    <!-- Conteneur de lecture plein écran (vidéos) -->
+            <ImageView
+                android:layout_width="140dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/streamix_wordmark"
+                android:scaleType="fitCenter"
+                android:contentDescription="Streamix" />
+        </FrameLayout>
+
+        <!-- Zone du site -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <WebView
+                android:id="@+id/webView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Voile latéral + filigrane : ne capte aucun toucher -->
+            <FrameLayout
+                android:id="@+id/siteOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:focusable="false"
+                android:visibility="gone">
+
+                <View
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="start"
+                    android:background="@drawable/glow_edge_left" />
+
+                <View
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="end"
+                    android:background="@drawable/glow_edge_right" />
+
+                <ImageView
+                    android:id="@+id/watermark"
+                    android:layout_width="86dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="bottom|start"
+                    android:layout_margin="12dp"
+                    android:paddingStart="7dp"
+                    android:paddingEnd="7dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:background="@drawable/bg_watermark"
+                    android:src="@drawable/streamix_wordmark"
+                    android:scaleType="fitCenter"
+                    android:alpha="0.9"
+                    android:contentDescription="Streamix" />
+            </FrameLayout>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_gravity="top"
+                android:progressTint="@color/red"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Conteneur de lecture plein écran (recouvre la bande et le filigrane) -->
     <FrameLayout
         android:id="@+id/fullscreenContainer"
         android:layout_width="match_parent"

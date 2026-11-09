@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar progressBar;
     private FrameLayout fullscreenContainer;
+    private View nativeBanner;
+    private View siteOverlay;
 
     private View fullscreenView;
     private WebChromeClient.CustomViewCallback fullscreenCallback;
@@ -53,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
         fullscreenContainer = findViewById(R.id.fullscreenContainer);
+        nativeBanner = findViewById(R.id.nativeBanner);
+        siteOverlay = findViewById(R.id.siteOverlay);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -82,6 +86,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return handleExternalLink(request.getUrl().toString());
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                updateSiteChrome(url);
+            }
+
+            @Override
+            public void onPageCommitVisible(WebView view, String url) {
+                updateSiteChrome(url);
             }
 
             @Override
@@ -139,6 +153,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Bande de marque en haut + voile latéral + filigrane en bas à gauche :
+     * uniquement sur les pages du site (après validation du code), jamais sur l'écran de code,
+     * et jamais pendant une lecture en plein écran.
+     */
+    private void updateSiteChrome(String url) {
+        boolean remote = url != null && (url.startsWith("http://") || url.startsWith("https://"));
+        boolean show = remote && fullscreenView == null;
+        int visibility = show ? View.VISIBLE : View.GONE;
+        if (nativeBanner != null) nativeBanner.setVisibility(visibility);
+        if (siteOverlay != null) siteOverlay.setVisibility(visibility);
+    }
+
     // ---------- Plein écran vidéo ----------
 
     private void enterFullscreen(View view, WebChromeClient.CustomViewCallback callback) {
@@ -156,6 +183,9 @@ public class MainActivity extends AppCompatActivity {
         fullscreenContainer.setVisibility(View.VISIBLE);
         webView.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.GONE);
+        // La bande de marque et le filigrane disparaissent pendant la lecture.
+        if (nativeBanner != null) nativeBanner.setVisibility(View.GONE);
+        if (siteOverlay != null) siteOverlay.setVisibility(View.GONE);
 
         orientationBeforeFullscreen = getRequestedOrientation();
         // Laisse tourner l'écran librement : la vidéo s'affiche en paysage si l'appareil pivote.
@@ -176,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setRequestedOrientation(orientationBeforeFullscreen);
         showSystemUi();
+        updateSiteChrome(webView.getUrl());
 
         if (fullscreenCallback != null) {
             fullscreenCallback.onCustomViewHidden();

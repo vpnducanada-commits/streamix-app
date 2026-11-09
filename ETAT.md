@@ -61,3 +61,11 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - **Vidéo plein écran** : `WebChromeClient.onShowCustomView`/`onHideCustomView` implémentés avec `fullscreenContainer`, mode immersif, rotation libre (`SCREEN_ORIENTATION_SENSOR`), `FLAG_KEEP_SCREEN_ON`, `configChanges` élargi (pas de recréation d'activité en tournant le téléphone).
 - **Notifications** : permission `POST_NOTIFICATIONS` demandée au lancement (Android 13+), canal `streamix_rappels`, rappel quotidien « C'est l'heure du visionnage » à 20:00 via AlarmManager (`setAndAllowWhileIdle`, sans permission d'alarme exacte), reprogrammé par `ReminderReceiver` et `BootReceiver`.
 - APK v10 : `versionCode 10`, 3 515 154 o, certificat identique (v4→v10).
+
+## 2026-11-08 — v11
+
+- **Bande de marque rétablie** en haut (56 dp, logo centré) sur les pages du site, **masquée pendant la lecture plein écran** (`updateSiteChrome(url)` + `enterFullscreen`).
+- **Filigrane Streamix en bas à gauche** (cadre translucent `bg_watermark`), superposé au site, sans capter les touchers.
+- **Voile latéral léger** (24 dp de chaque côté, dégradé rouge 18 % → transparent) sur toutes les pages après validation, jamais sur l'écran de code ; version web identique via `.browser-view::before/::after`.
+- **Rappel toutes les 5 h** : créneaux fixes 00h, 05h, 10h, 15h, 20h (heure locale), `ReminderScheduler.INTERVAL_HOURS = 5`.
+- APK v11 : `versionCode 11`, 3 516 949 o, même certificat.

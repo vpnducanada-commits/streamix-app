@@ -213,7 +213,11 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 /* Confirmation verte sur la carte */
 .code-card.card-ok{animation:cardOk .9s ease-out}
 @keyframes cardOk{0%{box-shadow:0 0 0 0 rgba(0,214,132,.55)}100%{box-shadow:0 0 0 28px rgba(0,214,132,0)}}
-.browser-watermark{position:absolute;right:12px;bottom:12px;z-index:3;pointer-events:none;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 6px}
+.browser-watermark{position:absolute;left:12px;bottom:12px;z-index:3;pointer-events:none;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 6px}
+/* Voile latéral léger sur les pages du site (après validation du code) */
+.browser-view::before,.browser-view::after{content:'';position:absolute;top:0;bottom:0;width:24px;z-index:9;pointer-events:none}
+.browser-view::before{left:0;background:linear-gradient(90deg,rgba(229,9,20,.18),rgba(229,9,20,0))}
+.browser-view::after{right:0;background:linear-gradient(270deg,rgba(229,9,20,.18),rgba(229,9,20,0))}
 .browser-watermark img{display:block;width:72px;height:24px;object-fit:contain}
 .admin-brand{width:100px;height:28px;object-fit:contain;object-position:left center;display:block}
 .modal-brand{width:76px;height:24px;object-fit:contain;object-position:left center;display:block;margin-bottom:4px}
