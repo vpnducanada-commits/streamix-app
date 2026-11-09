@@ -22,7 +22,9 @@ Important : le catch-all Vercel ne route **qu'un seul segment** — d'où les ro
 (`/api/codes?id=` au lieu de `/api/admin/codes/:id`).
 
 ## Auth
-`NEON_AUTH_BASE_URL` + `STREAMIX_ADMIN_EMAIL=vpnducanada@gmail.com`.
+`NEON_AUTH_BASE_URL` + `STREAMIX_ADMIN_EMAIL=vpnducanada@gmail.com,admin@streamix.app` (liste séparée par des virgules).
+Le compte `vpnducanada@gmail.com` existe déjà mais son mot de passe est inconnu ; le compte
+`admin@streamix.app` a été créé pour garantir l'accès (mot de passe communiqué hors dépôt).
 Le proxy renvoie l'en-tête `Origin` du domaine Neon Auth (sinon `INVALID_ORIGIN`) et
 réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`).
 

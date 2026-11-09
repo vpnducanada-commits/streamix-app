@@ -1,6 +1,6 @@
 const crypto = require('node:crypto');
 const CONNECTION = process.env.DATABASE_URL || '';
-const ADMIN_EMAIL = (process.env.STREAMIX_ADMIN_EMAIL || '').trim().toLowerCase();
+const ADMIN_EMAILS = (process.env.STREAMIX_ADMIN_EMAIL || '').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
 const AUTH_BASE = (process.env.NEON_AUTH_BASE_URL || '').replace(/\/+$/, '');
 const DESTINATION = 'https://vod.talis.top/';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -70,7 +70,7 @@ try { return JSON.parse(req.body); } catch { return {}; }
 return {};
 }
 async function isAdmin(req, res) {
-if (!AUTH_BASE || !ADMIN_EMAIL) { res.status(503).json({error: 'auth_not_configured'}); return false; }
+if (!AUTH_BASE || !ADMIN_EMAILS.length) { res.status(503).json({error: 'auth_not_configured'}); return false; }
 const cookie = req.headers.cookie || '';
 if (!cookie) { res.status(401).json({error: 'unauthenticated'}); return false; }
 for (const suffix of ['/get-session', '/auth/get-session']) {
@@ -82,9 +82,13 @@ if (!response.ok) continue;
 const payload = await response.json().catch(() => null);
 const user = (payload && (payload.user || (payload.data && payload.data.user) || (payload.session && payload.session.user))) || null;
 if (!user || !user.email) continue;
-const expected = Buffer.from(ADMIN_EMAIL);
 const found = Buffer.from(String(user.email).trim().toLowerCase());
-if (found.length !== expected.length || !crypto.timingSafeEqual(found, expected)) {
+let allowed = false;
+for (const candidate of ADMIN_EMAILS) {
+const expected = Buffer.from(candidate);
+if (found.length === expected.length && crypto.timingSafeEqual(found, expected)) allowed = true;
+}
+if (!allowed) {
 res.status(403).json({error: 'not_administrator'});
 return false;
 }
