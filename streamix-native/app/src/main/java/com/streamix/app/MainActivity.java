@@ -75,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
         // La page locale (file://) doit pouvoir appeler l'API Streamix en HTTPS.
         settings.setAllowFileAccessFromFileURLs(true);
         settings.setAllowUniversalAccessFromFileURLs(true);
+        // Certains catalogues mélangent https et http (affiches, bandes-annonces, liens
+        // de redirection) : sans ce mode, ces contenus sont bloqués par le WebView.
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
         // Toute la navigation reste dans le WebView (seul WhatsApp sort de l'application).
         webView.setWebViewClient(new WebViewClient() {

@@ -144,3 +144,14 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - Visuels UHD régénérés (QR v16, décodage vérifié sur les fichiers re-téléchargés) : vertical `1ujmDVb-4sL6GV7jblYGxrsEuO0p5Vo-E`, carré `14EqFzYntmsA2mwVRcIdDgDBIFK2o1vYr`.
 - Drive : seul `Streamix-natif-v16.apk` (`1wV6SDyNg5sYNhZne_dy9xdfMSobLGE5w`) reste téléchargeable ; v15 et les visuels précédents en corbeille, accès public révoqué.
 - Suite de tests automatisés : **26/26** (après les dernières retouches).
+
+## 2026-11-09 — v17 : régression corrigée (ERR_CLEARTEXT_NOT_PERMITTED)
+
+- **Symptôme** : dans certains sites, la coque affichait « Page Web non disponible » avec `net::ERR_CLEARTEXT_NOT_PERMITTED` (ex. redirection `http://2.1trk.org/...`).
+- **Cause** : à la v15/v16 j'avais durci `android:usesCleartextTraffic` à `false`. Les catalogues contiennent des liens et redirections en `http://` : le WebView les bloquait. Régression 100 % de mon fait.
+- **Correction** : `usesCleartextTraffic="true"` (comportement des v13/v14, qui fonctionnaient) + `setMixedContentMode(MIXED_CONTENT_COMPATIBILITY_MODE)` pour que les contenus `http` d'une page `https` (affiches, lecteurs, bandes-annonces) ne soient pas bloqués non plus.
+- **Incident Drive** : un `update_file_content` lancé avec un contenu vide a remis le fichier APK à 0 octet. Le fichier a été mis à la corbeille (accès public révoqué) et remplacé par un envoi propre ; le lien de la release ne pointe plus vers lui.
+- APK v17 : `versionCode 17`, `versionName "17.0"`, 2 865 199 o, même certificat (`6876c20d…`), sha256 `c755151f…`, build release non débogable.
+- Release publiée : `{"published":17}` ; l'APK servi par le lien de la release a été re-téléchargé et contrôlé (`versionCode 17`, `usesCleartextTraffic=true`).
+- Visuels UHD au QR de la v17 (décodage vérifié) : vertical `1VVcetzdzDVuhxLBuiLee-U1_pjoQxoz4`, carré `14gHe_vFH_a9UiQAHAXCst9IkS9X40Pl5`.
+- Drive : seul `Streamix-natif-v17.apk` (`1PwjmoKYwVsAauqH1AHdNIpNjkNmTiLEp`) reste téléchargeable.
