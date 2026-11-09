@@ -83,3 +83,10 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - `res/raw/streamix_chime.wav` retiré de l'APK (-154 Ko).
 - Créneaux inchangés : 20 h et 2 h.
 - APK v13 : `versionCode 13`, 3 517 517 o, même certificat.
+
+## 2026-11-08 — nettoyage Drive
+
+- 10 anciens APK déplacés à la corbeille : Streamix.apk, Streamix-natif(.apk, v3→v8, v10→v12).
+- Permission `anyoneWithLink` supprimée sur v7, v8, v10, v11, v12 (`make_private` ne suffisait pas : la permission restait active sur les fichiers en corbeille, `delete_permission` a été nécessaire).
+- Vérifié : les 10 anciens liens renvoient une page d'erreur HTML, seul **v13** (`1H8lkzgGuwmQmjwVrBZVimY9EqVjLR9Q6`) reste téléchargeable.
+- Copies locales conservées dans `/home/user/` (v4→v13).
