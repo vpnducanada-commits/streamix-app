@@ -75,3 +75,11 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - **Créneaux de rappel** : 20 h et 2 h (heure locale) au lieu du pas de 5 h — `ReminderScheduler.SLOT_HOURS = {20, 2}`.
 - **Son de notification personnalisé** : `res/raw/streamix_chime.wav` (carillon 2 notes C6→E6, 1,75 s), canal `streamix_rappels_v2` (identifiant neuf, car Android fige le son d'un canal), ancien canal `streamix_rappels` supprimé, `setSound` conservé pour Android 7.
 - APK v12 : `versionCode 12`, 3 672 393 o, même certificat.
+
+## 2026-11-08 — v13
+
+- **Son de notification = son par défaut de l'appareil** de chaque utilisateur (`Settings.System.DEFAULT_NOTIFICATION_URI`).
+- Canal `streamix_rappels_v3` ; anciens canaux `streamix_rappels` et `streamix_rappels_v2` supprimés au lancement (Android fige le son d'un canal existant).
+- `res/raw/streamix_chime.wav` retiré de l'APK (-154 Ko).
+- Créneaux inchangés : 20 h et 2 h.
+- APK v13 : `versionCode 13`, 3 517 517 o, même certificat.

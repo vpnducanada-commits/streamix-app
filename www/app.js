@@ -1,6 +1,6 @@
 // STREAMIX - les codes sont validés par le serveur, plus rien en local
 const API_BASE = 'https://streamix-app.vercel.app';
-const APP_VERSION_CODE = 12;
+const APP_VERSION_CODE = 13;
 const DEFAULT_URL = 'https://vod.talis.top/';
 let defaultUrl = DEFAULT_URL;
 let securityAnswer = '';

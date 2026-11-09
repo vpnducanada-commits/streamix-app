@@ -8,8 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
-import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
+import android.net.Uri;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -18,14 +19,10 @@ import androidx.core.content.ContextCompat;
 public final class NotificationHelper {
 
     /** Nouveau canal : Android fige le son d'un canal, il faut un identifiant neuf pour le changer. */
-    public static final String CHANNEL_ID = "streamix_rappels_v2";
-    private static final String LEGACY_CHANNEL_ID = "streamix_rappels";
+    public static final String CHANNEL_ID = "streamix_rappels_v3";
+    /** Anciens canaux (son personnalisé) : supprimés pour repasser au son par défaut de l'appareil. */
+    private static final String[] LEGACY_CHANNELS = {"streamix_rappels", "streamix_rappels_v2"};
     private static final int NOTIFICATION_ID = 2001;
-
-    /** Son personnalisé embarqué dans l'application (res/raw/streamix_chime.wav). */
-    public static Uri reminderSound(Context ctx) {
-        return Uri.parse("android.resource://" + ctx.getPackageName() + "/" + R.raw.streamix_chime);
-    }
 
     private NotificationHelper() {}
 
@@ -38,17 +35,19 @@ public final class NotificationHelper {
                 "Rappels de visionnage",
                 NotificationManager.IMPORTANCE_DEFAULT);
         channel.setDescription("Rappel « C'est l'heure du visionnage »");
+        // Son de notification par défaut de l'appareil de chaque utilisateur.
         AudioAttributes attrs = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build();
-        channel.setSound(reminderSound(ctx), attrs);
+        channel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI, attrs);
         channel.enableVibration(true);
         nm.createNotificationChannel(channel);
-        // L'ancien canal (son par défaut) n'est plus utilisé.
-        try {
-            nm.deleteNotificationChannel(LEGACY_CHANNEL_ID);
-        } catch (Exception ignored) { }
+        for (String legacy : LEGACY_CHANNELS) {
+            try {
+                nm.deleteNotificationChannel(legacy);
+            } catch (Exception ignored) { }
+        }
     }
 
     /** Android 13+ exige l'accord explicite de l'utilisateur. */
@@ -77,7 +76,6 @@ public final class NotificationHelper {
                 .setColor(0xFFE50914)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setSound(reminderSound(ctx))
                 .setContentIntent(contentIntent);
 
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
