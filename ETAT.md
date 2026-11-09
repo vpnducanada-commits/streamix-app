@@ -39,3 +39,9 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
    (sinon bouton « Créer ce compte »).
 2. Créer un premier vrai code.
 3. Reconstruire l'APK pour qu'il appelle l'API et lire `GET /api/release`.
+
+## Journal des correctifs
+- 2026-11-08 : le code était refusé à la validation (empreinte calculée en majuscules côté
+  `redeem`, en minuscules côté création). `normalizeCode` renvoie désormais des minuscules ;
+  test de non-régression ajouté (12/12). Vérifié en production : appareil A 200, A bis 200,
+  B 200, C 403 `device_limit`, code minuscule/sans tirets 200, code inconnu 404.
