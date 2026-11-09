@@ -134,3 +134,13 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - Release publiée : `POST /api/publish` → `{"published":15}` ; `GET /api/release` renvoie v15.
 - Visuels UHD régénérés avec le QR de la v15 (décodage vérifié après re-téléchargement) : vertical `1ymfoZnwf4KLsQx-_d8coE3Fi2_0b3Pw4`, carré `1TDVwI0ppdTn2QcYYEGuCm77NjuHjAQF3`.
 - Drive ne contient plus qu'un seul APK téléchargeable (`1d45M-jGFKWNkcsip-eT0ZrXe0kzFvMF5`) ; v14, anciens visuels et affiches de test en corbeille, accès public révoqué.
+
+## 2026-11-09 — v16 (finitions) et lien permanent
+
+- **Prénoms animés** : positionnés dans les marges gauche/droite de l'écran (`left`/`right`), ils ne passent plus sur le logo et ne sont plus coupés sur les petits écrans (320 px).
+- **`/api/download`** ajouté au routeur : redirection 302 vers l'APK de la dernière version publiée — permet des QR codes qui restent valables à chaque nouvelle version. (Déploiement Vercel à faire : les déploiements automatiques depuis GitHub sont désactivés sur le projet `streamix-app`, le push ne redéploie pas. En attendant, les visuels pointent sur le lien direct de la v16.)
+- APK v16 : `versionCode 16`, `versionName "16.0"`, 2 865 175 o, certificat identique (`6876c20d…`), sha256 `ed185c7c…`, build release non débogable, assets identiques à `www/`.
+- Release publiée : `POST /api/publish` → `{"published":16}` ; `GET /api/release` renvoie v16 ; l'APK servi par ce lien a été re-téléchargé et contrôlé (`aapt2 dump badging` → versionCode 16).
+- Visuels UHD régénérés (QR v16, décodage vérifié sur les fichiers re-téléchargés) : vertical `1ujmDVb-4sL6GV7jblYGxrsEuO0p5Vo-E`, carré `14EqFzYntmsA2mwVRcIdDgDBIFK2o1vYr`.
+- Drive : seul `Streamix-natif-v16.apk` (`1wV6SDyNg5sYNhZne_dy9xdfMSobLGE5w`) reste téléchargeable ; v15 et les visuels précédents en corbeille, accès public révoqué.
+- Suite de tests automatisés : **26/26** (après les dernières retouches).
