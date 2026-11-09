@@ -33,12 +33,23 @@
 @keyframes beat{0%,100%{transform:scale(.9);opacity:.45}50%{transform:scale(1.08);opacity:.8}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* -------------------------------------------------------- ENTRÉE ÉCRANS */
-[data-enter]{opacity:0;transform:translateY(22px)}
-.enter-run [data-enter]{
-  animation:enterUp .62s var(--m-spring) forwards;
-  animation-delay:calc(var(--d,0) * 1ms);
+/* -------------------------------------------------------- ENTRÉE ÉCRANS
+   Révélation par TRANSITION et non par animation : certaines cartes portent
+   « animation:none !important » (style.css) ce qui annulait l'animation
+   d'entrée et laissait la carte du code invisible (opacité 0 définitive).
+   La classe .mo n'est posée que si motion.js tourne : sans JS, tout reste
+   visible (aucun blocage possible de l'application). */
+html.mo [data-enter]{
+  opacity:0;transform:translateY(22px);
+  transition:opacity .62s var(--m-spring),transform .62s var(--m-spring);
+  transition-delay:calc(var(--d,0) * 1ms);
 }
+html.mo #lockScreen.enter-run [data-enter],
+html.mo.enter-done [data-enter]{
+  opacity:1;transform:none;
+}
+/* Filet de sécurité absolu : passé l'entrée, plus rien ne peut rester caché. */
+html.enter-done #lockScreen [data-enter]{opacity:1 !important;transform:none !important}
 @keyframes enterUp{
   0%{opacity:0;transform:translateY(22px) scale(.985)}
   100%{opacity:1;transform:translateY(0) scale(1)}
@@ -158,3 +169,6 @@
 .browser-in{animation:browserIn .55s var(--m-out) both}
 @keyframes browserIn{from{opacity:0;transform:scale(.975)}to{opacity:1;transform:none}}
 #browserView{transform-origin:50% 30%}
+
+/* ------------------------------------------- BANNIÈRE DE MISE À JOUR */
+body.has-update .lock-screen{padding-bottom:118px}

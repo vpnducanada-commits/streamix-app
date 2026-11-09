@@ -5,6 +5,9 @@
 (function () {
   'use strict';
 
+  // La feuille de style ne cache les blocs que si ce script a bien démarré.
+  document.documentElement.classList.add('mo');
+
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var REDUCED = reduce;
 
@@ -42,10 +45,25 @@
     });
   }
 
+  /* Filet de sécurité : quoi qu'il arrive, l'écran devient visible. */
+  function guard() {
+    setTimeout(function () {
+      var s = document.getElementById('splash');
+      if (s && !s.classList.contains('splash-out')) {
+        s.classList.add('splash-out');
+        setTimeout(function () { s.style.display = 'none'; }, 700);
+      }
+      var lock = document.getElementById('lockScreen');
+      if (lock) lock.classList.add('enter-run');
+      document.documentElement.classList.add('enter-done');
+    }, 3000);
+  }
+
   /* -------------------------------------------------------------- SPLASH */
   function splash() {
     var el = document.getElementById('splash');
-    if (!el) return Promise.resolve();
+    guard();
+    if (!el) { document.getElementById('lockScreen').classList.add('enter-run'); return Promise.resolve(); }
     var done = false;
     function finish() {
       if (done) return; done = true;

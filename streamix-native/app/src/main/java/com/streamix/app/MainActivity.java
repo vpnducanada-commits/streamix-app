@@ -106,6 +106,18 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+            public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                // Le moteur WebView a été tué par le système : on relance proprement l'écran.
+                if (view != null) {
+                    android.view.ViewParent parent = view.getParent();
+                    if (parent instanceof ViewGroup) ((ViewGroup) parent).removeView(view);
+                    view.destroy();
+                }
+                recreate();
+                return true;
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
                 fadeInPage(view);
                 if (clearingHistory && url != null && url.startsWith(LOCK_PAGE)) {
@@ -119,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
+                String url = view.getUrl();
+                if (url == null || !(url.startsWith("http://") || url.startsWith("https://"))) return;
                 animateProgress(newProgress);
             }
 
@@ -134,12 +148,23 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Page locale : écran de code.
-        webView.loadUrl(LOCK_PAGE);
+        // La version réelle de l'APK est transmise à la page (?v=…) : la bannière
+        // « mise à jour » ne s'affiche que si le serveur propose mieux.
+        webView.loadUrl(lockPageUrl(false));
 
         // Rappel quotidien « C'est l'heure du visionnage ».
         NotificationHelper.ensureChannel(this);
         ReminderScheduler.schedule(this);
         askNotificationPermission();
+    }
+
+    /** URL de l'écran de code, avec la version installée (et l'option de verrouillage). */
+    private String lockPageUrl(boolean lock) {
+        int code = 0;
+        try {
+            code = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+        } catch (Exception ignored) { }
+        return LOCK_PAGE + "?v=" + code + (lock ? "&lock=1" : "");
     }
 
     // ---------- Animations d'interface ----------
@@ -301,20 +326,31 @@ public class MainActivity extends AppCompatActivity {
 
     // WhatsApp est le seul lien sortant prévu : les autres pages restent dans la WebView.
     private boolean handleExternalLink(String url) {
+        if (url == null) return false;
         Uri uri = Uri.parse(url);
-        if (!"wa.me".equalsIgnoreCase(uri.getHost()) || !"/24166196414".equals(uri.getPath())) return false;
-        Intent whatsapp = new Intent(Intent.ACTION_VIEW, uri);
-        whatsapp.setPackage("com.whatsapp");
+        String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+        String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase();
+
+        boolean isWhatsApp = "wa.me".equals(host) || "api.whatsapp.com".equals(host)
+                || "whatsapp.com".equals(host) || "com.whatsapp".equals(scheme);
+        boolean isPhone = "tel".equals(scheme) || "sms".equals(scheme) || "mailto".equals(scheme);
+        if (!isWhatsApp && !isPhone) return false;
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        if (isWhatsApp) intent.setPackage("com.whatsapp");
         try {
-            startActivity(whatsapp);
+            startActivity(intent);
+            return true;
         } catch (ActivityNotFoundException e) {
             try {
-                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                Intent fallback = new Intent(Intent.ACTION_VIEW, uri);
+                fallback.setPackage(null);
+                startActivity(fallback);
+                return true;
             } catch (ActivityNotFoundException ignored) {
                 return false;
             }
         }
-        return true;
     }
 
     // ---------- Cycle de vie ----------
@@ -334,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // Retour à l'écran de code : plus de bouton de verrouillage dans l'interface.
                 clearingHistory = true;
-                webView.loadUrl(LOCK_PAGE + "?lock=1");
+                webView.loadUrl(lockPageUrl(true));
             }
             return;
         }

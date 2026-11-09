@@ -106,3 +106,31 @@ réémet les cookies sur notre domaine (`Path=/; HttpOnly; Secure; SameSite=Lax`
 - Release publiée : `POST /api/publish` → `{"published":14}` ; `GET /api/release` renvoie v14.
 - **Visuels UHD régénérés** avec le QR de la v14 (QR vérifié par décodage sur les fichiers re-téléchargés depuis Drive) : vertical 2160×3836 (`1vIXCFn0zWBHcTFhR8juR_-Od4Xh5l1nt`), carré 2160×2160 (`1V2liC63dbj8aY0ue2g-aMX9bUJPmtLwb`). Les anciens visuels (QR v13) et les affiches de test sont à la corbeille, accès public révoqué.
 - Drive ne contient plus qu'**un seul APK téléchargeable** : `Streamix-natif-v14.apk` (`1kRsv_UUAYwo95JuF1QikFsjkUs5NuP6o`).
+
+## 2026-11-09 — v15 : audit complet et correctifs
+
+**Bug bloquant signalé par l'utilisateur** : sur l'écran de code, la carte du code (champ + bouton ENTRER + « Code oublié ? ») était totalement invisible — on ne voyait que le logo, « Administration » et le bouton WhatsApp.
+
+- **Cause** : `style.css` impose `animation:none !important` à `#lockScreen .shimmer-card`. La révélation `[data-enter]` reposait sur une animation CSS : annulée, l'élément restait figé à `opacity:0` (état initial) sans jamais redevenir visible.
+- **Correction** : la révélation passe par des **transitions** (`html.mo [data-enter]`), insensibles à `animation:none`. Trois filets de sécurité :
+  1. la classe `mo` n'est posée que si `motion.js` démarre (sans JS, tout est visible) ;
+  2. `guard()` force la sortie du splash et l'affichage après 3 s ;
+  3. un script inline retire `mo` si `MOTION` n'existe pas au bout de 2,5 s + règle `html.enter-done` en `!important`.
+- **Version** : `APP_VERSION_CODE` figé à 13 → la bannière « Mise à jour 14.0 » s'affichait même sur la v14. La coque native transmet maintenant la vraie version (`index.html?v=<versionCode>`), le repli navigateur vaut 15.
+- **Retour depuis le site** : après un retour arrière, la session restaurée laissait un navigateur vide (écran noir). La session restaure désormais aussi le chargement du catalogue (`loadUrl` + surveillance d'expiration).
+- **`watcher`** déclaré avant le bloc de restauration (la zone morte temporelle de `let` faisait planter le script au retour).
+- **« Code oublié ? »** : impasse (« Utilise le tableau de bord en ligne ») remplacée par un accès WhatsApp prérempli ; l'ancienne question secrète locale est retirée de l'interface.
+- **Mise en page** : placeholder du champ en Inter (l'espacement monospace le rendait illisible), `letter-spacing` réduit, prénoms animés cantonnés aux marges (ils passaient sur le logo et la carte), marge basse quand la bannière de mise à jour est présente.
+- **Accessibilité** : `aria-label` sur le champ, `role="status" aria-live` sur les erreurs, `autocapitalize/autocorrect/enterkeyhint`, `color-scheme:dark`, polices Google chargées en non bloquant (aucun écran blanc si le réseau est lent).
+- **Natif** :
+  - build **release** (et non plus debug) signé avec le même certificat → `debuggable=false`, APK 2,87 Mo au lieu de 3,53 ;
+  - `usesCleartextTraffic="false"` (tout est en HTTPS) ;
+  - liens sortants élargis : WhatsApp (`wa.me`, `api.whatsapp.com`, `whatsapp://`), `tel:`, `sms:`, `mailto:` ;
+  - barre de progression jamais affichée sur la page locale ;
+  - `onRenderProcessGone` : redémarrage propre si le moteur WebView est tué.
+- **Tests automatisés** (Chromium headless + serveur réel, 26 vérifications) : carte visible sur 320×568 → 768×1024 et en paysage, aucun débordement horizontal, erreurs « code vide »/« code refusé », modale, rideau, ouverture du navigateur, session mémorisée, retour sans écran noir, bannière de mise à jour (affichée si version supérieure, absente sinon), `prefers-reduced-motion`.
+- **Bout en bout réel** : page `file://` (comme le WebView) + code de test `79F0-…-E973` → `HTTP 200` → rideau → navigation vers `https://vod.talis.top/` (« Répertoire · TopStream »), aucune erreur JS.
+- APK v15 : `versionCode 15`, `versionName "15.0"`, 2 865 131 o, certificat identique (`6876c20d…`), sha256 `b3324673…`.
+- Release publiée : `POST /api/publish` → `{"published":15}` ; `GET /api/release` renvoie v15.
+- Visuels UHD régénérés avec le QR de la v15 (décodage vérifié après re-téléchargement) : vertical `1ymfoZnwf4KLsQx-_d8coE3Fi2_0b3Pw4`, carré `1TDVwI0ppdTn2QcYYEGuCm77NjuHjAQF3`.
+- Drive ne contient plus qu'un seul APK téléchargeable (`1d45M-jGFKWNkcsip-eT0ZrXe0kzFvMF5`) ; v14, anciens visuels et affiches de test en corbeille, accès public révoqué.

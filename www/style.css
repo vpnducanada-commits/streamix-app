@@ -51,7 +51,8 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow:hidde
 .card-glow{position:absolute;inset:-1px;border-radius:20px;background:linear-gradient(120deg,transparent,rgba(229,9,20,0.12),transparent);background-size:200% 100%;animation:cardShimmer 4s linear infinite;pointer-events:none}
 @keyframes cardShimmer{0%{background-position:-100% 0}100%{background-position:100% 0}}
 .code-input-wrapper{margin:18px 0 12px;position:relative;display:flex;align-items:center;z-index:1}
-.code-input-wrapper input{flex:1;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:12px;padding:16px 44px 16px 16px;text-align:center;font-size:20px;letter-spacing:3px;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace;outline:none;transition:0.2s;width:100%}
+.code-input-wrapper input{flex:1;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:12px;padding:16px 44px 16px 16px;text-align:center;font-size:18px;letter-spacing:1.6px;font-weight:700;color:#fff;font-family:'JetBrains Mono',ui-monospace,monospace;outline:none;transition:0.2s;width:100%}
+.code-input-wrapper input::placeholder{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;letter-spacing:0.4px;color:#7c7c88}
 .code-input-wrapper input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(229,9,20,0.15),0 0 18px rgba(229,9,20,0.15)}
 .eye-btn{position:absolute;right:8px;background:#1a1a1a;border:1px solid #2a2a2a;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;z-index:2}
 .small-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%)}

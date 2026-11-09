@@ -1,6 +1,11 @@
 // STREAMIX - les codes sont validés par le serveur, plus rien en local
 const API_BASE = 'https://streamix-app.vercel.app';
-const APP_VERSION_CODE = 13;
+// Version réelle de l'APK, transmise par la coque native (?v=15).
+// Repli sur une constante à jour si l'application est ouverte dans un navigateur.
+const APP_VERSION_CODE = (function(){
+  const v = parseInt(new URLSearchParams(location.search).get('v') || '', 10);
+  return (isFinite(v) && v > 0) ? v : 15;
+})();
 const DEFAULT_URL = 'https://vod.talis.top/';
 let defaultUrl = DEFAULT_URL;
 let securityAnswer = '';
@@ -8,6 +13,7 @@ let currentMainCode = '';
 let codes = [];
 let currentSession = null;
 let unlocking = false;
+let watcher = null;
 
 // Identifiant d'appareil stable, au format attendu par le serveur (32 à 128 caractères).
 function getOrCreateDeviceId(){
@@ -73,6 +79,10 @@ try {
       const bv = document.getElementById('browserView');
       if(bv) bv.classList.remove('hidden');
       updateSessionUI();
+      // Retour depuis le site (bouton Retour) : on rouvre directement le catalogue
+      // au lieu de laisser un écran vide.
+      loadUrl(sess.destination || DEFAULT_URL);
+      startExpiryWatcher();
     } else {
       sessionStorage.removeItem('streamix_session');
       currentSession = null;
@@ -294,7 +304,10 @@ document.getElementById('forgotSubmit').addEventListener('click', checkSecurity)
 document.getElementById('forgotAnswer').addEventListener('keydown', e=>{ if(e.key==='Enter') checkSecurity(); });
 function normalizeAnswer(s){ return s.toLowerCase().trim().replace(/-/g,'/').replace(/\s+/g,' '); }
 function checkSecurity(){
-  document.getElementById('forgotError').textContent='Utilise le tableau de bord en ligne.';
+  const tel = (document.getElementById('forgotAnswer').value || '').replace(/[^0-9+]/g,'');
+  let txt = "Bonjour, j'ai besoin d'aide pour mon code d'accès Streamix.";
+  if(tel) txt += " Mon numéro : " + tel;
+  window.location.href = 'https://wa.me/24166196414?text=' + encodeURIComponent(txt);
 }
 document.getElementById('adminAccessLink').addEventListener('click', ()=>{ window.location.href = API_BASE + '/admin.html'; });
 document.getElementById('adminLoginBtn').addEventListener('click', tryAdminLogin);
@@ -401,7 +414,6 @@ function updateStats(){
   const a=document.getElementById('statActive'); if(a) a.textContent=active;
   const e=document.getElementById('statExpired'); if(e) e.textContent=expired;
 }
-let watcher=null;
 function startExpiryWatcher(){
   stopExpiryWatcher();
   watcher=setInterval(()=>{
@@ -442,8 +454,10 @@ window.deleteCode=deleteCode;
   function showNext() {
     label.classList.remove('visible-name');
     label.textContent = names[index++ % names.length];
-    label.style.left = (8 + Math.random() * 65) + '%';
-    label.style.top = (10 + Math.random() * 75) + '%';
+    // Les prénoms restent dans les marges : jamais par-dessus le logo ni la carte du code.
+    const right = Math.random() < 0.5;
+    label.style.left = (right ? 64 + Math.random() * 12 : 2 + Math.random() * 12).toFixed(1) + '%';
+    label.style.top = (9 + Math.random() * 46).toFixed(1) + '%';
     void label.offsetWidth;
     label.classList.add('visible-name');
     window.setTimeout(showNext, 5500 + Math.random() * 1800);
@@ -462,6 +476,8 @@ function checkRelease(){
 }
 function showUpdateBanner(rel){
   if(document.getElementById('updateBanner')) return;
+  try{ if(sessionStorage.getItem('streamix_update_skip') === String(rel.versionCode)) return; }catch(e){}
+  document.body.classList.add('has-update');
   const b = document.createElement('div');
   b.id = 'updateBanner';
   b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#141418;border-top:1px solid #2a2a30;color:#f2f2f5;padding:12px 14px;display:flex;gap:10px;align-items:center;font:13px system-ui,sans-serif';
@@ -475,7 +491,11 @@ function showUpdateBanner(rel){
   const x = document.createElement('button');
   x.textContent = '\u00d7';
   x.style.cssText = 'background:transparent;border:0;color:#9a9aa6;font-size:18px';
-  x.onclick = function(){ b.remove(); };
+  x.onclick = function(){
+    b.remove();
+    document.body.classList.remove('has-update');
+    try{ sessionStorage.setItem('streamix_update_skip', String(rel.versionCode)); }catch(e){}
+  };
   b.appendChild(t); b.appendChild(a); b.appendChild(x);
   document.body.appendChild(b);
 }
