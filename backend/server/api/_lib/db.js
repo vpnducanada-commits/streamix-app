@@ -5,7 +5,6 @@ const pool = new pg.Pool({
   max: 3,
   idleTimeoutMillis: 10000,
   connectionTimeoutMillis: 8000,
-  ssl: process.env.DATABASE_URL?.includes('sslmode=disable') ? false : {rejectUnauthorized: true},
 });
 
 export async function query(text, params) {

@@ -1,6 +1,20 @@
--- Streamix — limitation des tentatives de connexion (anti-devinette).
--- Additive : ne touche ni aux tables existantes ni à Better Auth.
+-- Streamix — clé HMAC côté base + limitation des tentatives.
+-- Additive, réexécutable, sans effet sur Better Auth.
 BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS streamix.settings (
+  key text PRIMARY KEY,
+  value bytea NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- La clé est générée par la base : elle ne transite jamais par un navigateur,
+-- un message ou un dépôt de code.
+INSERT INTO streamix.settings (key, value)
+VALUES ('code_hmac_key', gen_random_bytes(32))
+ON CONFLICT (key) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS streamix.attempts (
   id bigserial PRIMARY KEY,
@@ -12,9 +26,6 @@ CREATE TABLE IF NOT EXISTS streamix.attempts (
 CREATE INDEX IF NOT EXISTS streamix_attempts_window_idx
   ON streamix.attempts (ip_digest, attempted_at DESC);
 
--- Enregistre une tentative et indique si le quota est dépassé.
--- 20 tentatives par 10 minutes et par adresse : bloque le balayage de codes
--- sans gêner un utilisateur normal qui se trompe de code.
 CREATE OR REPLACE FUNCTION streamix.record_attempt(p_ip_digest bytea, p_accepted boolean, p_limit integer DEFAULT 20)
 RETURNS text
 LANGUAGE plpgsql
@@ -34,7 +45,6 @@ BEGIN
 END;
 $$;
 
--- Purge de sécurité : conserve au plus 30 jours d'historique de tentatives.
 CREATE OR REPLACE FUNCTION streamix.purge_attempts()
 RETURNS integer
 LANGUAGE plpgsql
@@ -49,6 +59,7 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON streamix.settings FROM PUBLIC;
 REVOKE ALL ON streamix.attempts FROM PUBLIC;
 REVOKE ALL ON FUNCTION streamix.record_attempt(bytea, boolean, integer) FROM PUBLIC;
 REVOKE ALL ON FUNCTION streamix.purge_attempts() FROM PUBLIC;
