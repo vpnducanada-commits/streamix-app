@@ -20,7 +20,7 @@ global.fetch = async (url, options) => {
   if (href.includes('/sign-in/email')) return {ok: true, status: 200, text: async () => '{"ok":true}', headers: {getSetCookie: () => [], get: () => 'application/json'}};
   const q = JSON.parse(options.body).query;
   seen.push(q);
-  if (q.includes("encode(value, 'hex')")) return {ok: true, status: 200, text: async () => JSON.stringify([{k: 'ef'.repeat(32)}])};
+  if (q.includes('encode(value')) return {ok: true, status: 200, text: async () => JSON.stringify([{k: 'ef'.repeat(32)}])};
   if (q.includes('record_attempt')) return {ok: true, status: 200, text: async () => JSON.stringify([{status: attemptStatus}])};
   if (q.includes('claim_device')) { seen.push(JSON.stringify(JSON.parse(options.body).params)); return {ok: true, status: 200, text: async () => JSON.stringify([{result: claimResult, valid_until: '2026-12-01T00:00:00Z'}])}; }
   if (q.includes('INSERT INTO streamix.access_codes')) { lastInsert = JSON.parse(options.body).params; return {ok: true, status: 200, text: async () => '[]'}; }
