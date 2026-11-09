@@ -150,6 +150,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Téléchargements (mise à jour de l'APK depuis la bannière) : sans cela,
+        // cliquer sur le lien ne faisait rien du tout dans un WebView.
+        webView.setDownloadListener(new android.webkit.DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition,
+                                        String mimeType, long contentLength) {
+                if (url == null || !(url.startsWith("http://") || url.startsWith("https://"))) return;
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                } catch (ActivityNotFoundException ignored) { }
+            }
+        });
+
         // Page locale : écran de code.
         // La version réelle de l'APK est transmise à la page (?v=…) : la bannière
         // « mise à jour » ne s'affiche que si le serveur propose mieux.

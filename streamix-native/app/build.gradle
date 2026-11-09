@@ -8,8 +8,8 @@ android {
         applicationId "com.streamix.app"
         minSdk 24
         targetSdk 34
-        versionCode 18
-        versionName "18.0"
+        versionCode 19
+        versionName "19.0"
     }
 
     // Signature officielle : keystore.properties (non versionné) en priorité.
