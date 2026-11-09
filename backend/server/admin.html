@@ -3,344 +3,135 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Streamix — Administration</title>
+<title>Streamix - Administration</title>
 <style>
-  :root { color-scheme: dark; --red:#d81f26; --dark:#0a0a0c; --panel:#141418; --line:#26262e; }
-  * { box-sizing: border-box; }
-  body { margin:0; min-height:100vh; background: radial-gradient(circle at 50% -10%, #2a0507, var(--dark) 55%);
-         color:#f2f2f5; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  header { display:flex; align-items:center; justify-content:center; padding:14px 16px;
-           background: linear-gradient(135deg, var(--red), #7b0b10); box-shadow: 0 6px 24px rgba(0,0,0,.45); }
-  header b { letter-spacing:.26em; text-transform:uppercase; font-size:15px; }
-  main { max-width: 980px; margin: 0 auto; padding: 22px 16px 60px; }
-  .card { background: var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:18px; }
-  h2 { margin:0 0 14px; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#ffb9bb; }
-  label { display:block; font-size:12.5px; color:#a7a7b2; margin:10px 0 5px; }
-  input, select { width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line);
-                  background:#0e0e12; color:#f2f2f5; font-size:14px; }
-  button { cursor:pointer; border:0; border-radius:10px; padding:11px 16px; font-size:14px; font-weight:600;
-           background: linear-gradient(135deg, var(--red), #9c1015); color:#fff; }
-  button.ghost { background:transparent; border:1px solid var(--line); color:#cfcfd8; font-weight:500; }
-  button:disabled { opacity:.5; cursor:default; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; }
-  .row > * { flex:1 1 150px; }
-  table { width:100%; border-collapse:collapse; font-size:13.5px; }
-  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { color:#9a9aa6; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
-  .pill { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:600; }
-  .ok { background:rgba(46,204,113,.15); color:#6ee7a0; }
-  .warn { background:rgba(241,196,15,.15); color:#f6d365; }
-  .bad { background:rgba(216,31,38,.2); color:#ff8f93; }
-  .muted { color:#8a8a95; font-size:12.5px; }
-  .msg { margin-top:12px; font-size:13.5px; }
-  .msg.err { color:#ff8f93; }
-  .msg.ok { color:#6ee7a0; }
-  .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.08em; font-size:14px;
-          background:#0e0e12; border:1px dashed #3a3a44; border-radius:10px; padding:12px; word-break:break-all; }
-  .hide { display:none !important; }
-  .actions button { padding:7px 10px; font-size:12px; }
+:root{color-scheme:dark}
+body{margin:0;background:#0a0a0c;color:#f2f2f5;font:14px system-ui,sans-serif}
+header{background:linear-gradient(135deg,#d81f26,#7b0b10);padding:14px;text-align:center;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:13px}
+main{max-width:900px;margin:0 auto;padding:18px 14px 50px}
+.card{background:#141418;border:1px solid #26262e;border-radius:14px;padding:16px;margin-bottom:16px}
+h2{margin:0 0 12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#ffb9bb}
+label{display:block;font-size:12px;color:#a7a7b2;margin:10px 0 4px}
+input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #26262e;background:#0e0e12;color:#f2f2f5;box-sizing:border-box}
+button{cursor:pointer;border:0;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#d81f26,#9c1015);color:#fff}
+button.g{background:transparent;border:1px solid #26262e;color:#cfcfd8;font-weight:500}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 130px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid #26262e}
+th{color:#9a9aa6;font-size:11px;text-transform:uppercase}
+.p{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.ok{background:rgba(46,204,113,.15);color:#6ee7a0}
+.warn{background:rgba(241,196,15,.15);color:#f6d365}
+.bad{background:rgba(216,31,38,.2);color:#ff8f93}
+.m{color:#8a8a95;font-size:12px}
+.msg{margin-top:10px;font-size:13px;color:#ff8f93}
+.hide{display:none}
+.code{font-family:monospace;letter-spacing:.1em;background:#0e0e12;border:1px dashed #3a3a44;border-radius:9px;padding:10px;word-break:break-all}
 </style>
 </head>
 <body>
-<header><b>Streamix Administration</b></header>
+<header>Streamix Administration</header>
 <main>
-
-  <section id="loginCard" class="card">
-    <h2>Connexion administrateur</h2>
-    <label for="email">Adresse e-mail</label>
-    <input id="email" type="email" autocomplete="username" value="vpnducanada@gmail.com">
-    <label for="password">Mot de passe</label>
-    <input id="password" type="password" autocomplete="current-password">
-    <div class="row" style="margin-top:16px">
-      <button id="loginBtn">Se connecter</button>
-      <button id="logoutBtn" class="ghost hide">Se déconnecter</button>
-    </div>
-    <div id="loginMsg" class="msg"></div>
-    <p class="muted">Seul le compte autorisé côté serveur peut administrer Streamix. Un simple compte inscrit n’a aucun droit.</p>
-  </section>
-
-  <section id="app" class="hide">
-    <div class="card">
-      <h2>Créer un code d’accès</h2>
-      <div class="row">
-        <div><label for="label">Étiquette (nom du client)</label><input id="label" placeholder="ex. Client Libreville"></div>
-        <div><label for="days">Durée (jours, vide = illimitée)</label><input id="days" type="number" min="1" max="3650" placeholder="30"></div>
-        <div><label for="maxDev">Appareils autorisés</label><input id="maxDev" type="number" min="1" max="10000" value="2"></div>
-      </div>
-      <div class="row" style="margin-top:14px"><button id="createBtn">Générer le code</button></div>
-      <div id="createMsg" class="msg"></div>
-      <div id="newCode" class="hide" style="margin-top:14px">
-        <p class="muted">Ce code ne sera plus jamais affiché : note-le maintenant.</p>
-        <div class="code" id="newCodeValue"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Rechercher et gérer</h2>
-      <div class="row">
-        <div><label for="search">Recherche (étiquette ou identifiant)</label><input id="search" placeholder="Client, id…"></div>
-        <div><label for="status">Statut</label>
-          <select id="status">
-            <option value="all">Tous</option>
-            <option value="active">Actifs</option>
-            <option value="expired">Expirés</option>
-            <option value="revoked">Désactivés</option>
-            <option value="limit">Limite atteinte</option>
-          </select>
-        </div>
-      </div>
-      <div class="row" style="margin-top:14px"><button id="refreshBtn" class="ghost">Actualiser</button></div>
-      <div id="listMsg" class="msg"></div>
-      <div style="overflow-x:auto; margin-top:12px">
-        <table>
-          <thead><tr><th>Étiquette</th><th>Statut</th><th>Appareils</th><th>Expire</th><th>Actions</th></tr></thead>
-          <tbody id="rows"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Publier une mise à jour</h2>
-      <div class="row">
-        <div><label for="verCode">Version (numéro entier)</label><input id="verCode" type="number" min="1" placeholder="7"></div>
-        <div><label for="verName">Nom de version</label><input id="verName" placeholder="7.0"></div>
-      </div>
-      <label for="verUrl">Lien de téléchargement HTTPS</label>
-      <input id="verUrl" placeholder="https://drive.google.com/…">
-      <label for="verNotes">Note affichée dans l’application</label>
-      <input id="verNotes" placeholder="Nouvelle version disponible">
-      <div class="row" style="margin-top:14px"><button id="publishBtn">Publier</button></div>
-      <div id="releaseMsg" class="msg"></div>
-    </div>
-  </section>
+<section id="login" class="card">
+<h2>Connexion</h2>
+<label>E-mail</label><input id="mail" type="email" value="vpnducanada@gmail.com">
+<label>Mot de passe</label><input id="pwd" type="password" autocomplete="current-password">
+<div class="row" style="margin-top:14px"><button id="go">Se connecter</button><button id="up" class="g">Créer ce compte</button><button id="out" class="g hide">Quitter</button></div>
+<div id="lmsg" class="msg"></div>
+<p class="m">Seul le compte autorisé côté serveur peut administrer. Un compte simplement inscrit n’a aucun droit.</p>
+</section>
+<section id="app" class="hide">
+<div class="card">
+<h2>Créer un code</h2>
+<div class="row">
+<div><label>Étiquette client</label><input id="lbl" placeholder="Client Libreville"></div>
+<div><label>Durée en jours</label><input id="dys" type="number" min="1" placeholder="30"></div>
+<div><label>Appareils</label><input id="dev" type="number" min="1" value="2"></div>
+</div>
+<div class="row" style="margin-top:12px"><button id="mk">Générer</button></div>
+<div id="cmsg" class="msg"></div>
+<div id="newc" class="hide" style="margin-top:12px"><p class="m">Affiché une seule fois : note-le maintenant.</p><div class="code" id="newv"></div></div>
+</div>
+<div class="card">
+<h2>Codes</h2>
+<div class="row">
+<div><label>Recherche</label><input id="q" placeholder="étiquette ou id"></div>
+<div><label>Statut</label><select id="st"><option value="all">Tous</option><option value="active">Actifs</option><option value="expired">Expirés</option><option value="revoked">Désactivés</option><option value="limit">Limite atteinte</option></select></div>
+</div>
+<div class="row" style="margin-top:12px"><button id="rf" class="g">Actualiser</button></div>
+<div id="info" class="msg"></div>
+<table><thead><tr><th>Étiquette</th><th>Statut</th><th>Appareils</th><th>Expire</th><th></th></tr></thead><tbody id="tb"></tbody></table>
+</div>
+</section>
+<footer class="m" style="text-align:center;margin-top:18px">Streamix · administration serveur</footer>
 </main>
-
 <script>
-(function () {
-  'use strict';
-  var state = {codes: []};
-
-  function $(id) { return document.getElementById(id); }
-  function msg(el, text, ok) {
-    el.textContent = text || '';
-    el.className = 'msg ' + (ok ? 'ok' : 'err');
-  }
-  function api(path, options) {
-    options = options || {};
-    options.credentials = 'same-origin';
-    options.headers = Object.assign({'Content-Type': 'application/json'}, options.headers || {});
-    return fetch(path, options).then(function (response) {
-      return response.json().catch(function () { return {}; }).then(function (body) {
-        return {status: response.status, body: body};
-      });
-    });
-  }
-  function fmtDate(value) {
-    if (!value) return 'jamais';
-    var d = new Date(value);
-    if (isNaN(d.getTime())) return String(value);
-    return d.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric'}) +
-      ' ' + d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
-  }
-  function pillFor(code) {
-    if (code.revoked) return '<span class="pill bad">Désactivé</span>';
-    if (code.expired) return '<span class="pill warn">Expiré</span>';
-    if (code.maxDevices !== null && code.devices >= code.maxDevices) return '<span class="pill warn">Limite atteinte</span>';
-    return '<span class="pill ok">Actif</span>';
-  }
-
-  function showApp() {
-    $('loginCard').classList.add('hide');
-    $('app').classList.remove('hide');
-    load();
-  }
-  function showLogin() {
-    $('app').classList.add('hide');
-    $('loginCard').classList.remove('hide');
-  }
-
-  function load() {
-    var search = encodeURIComponent($('search').value.trim());
-    var status = $('status').value;
-    api('/api/admin/codes?search=' + search + '&status=' + status).then(function (result) {
-      if (result.status === 401) { showLogin(); return; }
-      if (result.status !== 200) { msg($('listMsg'), result.body.error || 'Erreur de chargement.'); return; }
-      state.codes = result.body.codes || [];
-      render();
-      msg($('listMsg'), state.codes.length + ' code(s).', true);
-    });
-  }
-
-  function render() {
-    var rows = $('rows');
-    rows.innerHTML = '';
-    state.codes.forEach(function (code) {
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>' + (code.label ? escapeHtml(code.label) : '<span class="muted">sans nom</span>') +
-        '<div class="muted">' + code.id.slice(0, 8) + '</div></td>' +
-        '<td>' + pillFor(code) + '</td>' +
-        '<td>' + code.devices + (code.maxDevices === null ? ' / ∞' : ' / ' + code.maxDevices) + '</td>' +
-        '<td>' + (code.expiresAt ? fmtDate(code.expiresAt) : 'jamais') + '</td>' +
-        '<td class="actions"></td>';
-      var actions = tr.querySelector('.actions');
-      var devicesBtn = document.createElement('button');
-      devicesBtn.className = 'ghost';
-      devicesBtn.textContent = 'Appareils';
-      devicesBtn.onclick = function () { loadDevices(code); };
-      var toggle = document.createElement('button');
-      toggle.className = code.revoked ? '' : 'ghost';
-      toggle.textContent = code.revoked ? 'Réactiver' : 'Désactiver';
-      toggle.onclick = function () { toggleCode(code); };
-      actions.appendChild(devicesBtn);
-      actions.appendChild(document.createTextNode(' '));
-      actions.appendChild(toggle);
-      rows.appendChild(tr);
-    });
-    if (!state.codes.length) {
-      rows.innerHTML = '<tr><td colspan="5" class="muted">Aucun code ne correspond.</td></tr>';
-    }
-  }
-
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, function (c) {
-      return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
-    });
-  }
-
-  function toggleCode(code) {
-    api('/api/admin/codes/' + code.id, {
-      method: 'PATCH',
-      body: JSON.stringify({revoked: !code.revoked})
-    }).then(function (result) {
-      if (result.status !== 200) { msg($('listMsg'), result.body.error || 'Action refusée.'); return; }
-      msg($('listMsg'), code.revoked ? 'Code réactivé.' : 'Code désactivé : l’accès est coupé.', true);
-      load();
-    });
-  }
-
-  function loadDevices(code) {
-    api('/api/admin/codes/' + code.id).then(function (result) {
-      if (result.status !== 200) { msg($('listMsg'), result.body.error || 'Erreur appareils.'); return; }
-      var devices = result.body.devices || [];
-      var panel = $('listMsg');
-      panel.className = 'msg ok';
-      panel.innerHTML = '';
-      var title = document.createElement('div');
-      title.textContent = 'Appareils de « ' + (code.label || code.id.slice(0, 8)) + ' » :';
-      panel.appendChild(title);
-      if (!devices.length) {
-        var none = document.createElement('div');
-        none.className = 'muted';
-        none.textContent = 'Aucun appareil enregistré.';
-        panel.appendChild(none);
-        return;
-      }
-      devices.forEach(function (device) {
-        var line = document.createElement('div');
-        line.className = 'muted';
-        line.style.marginTop = '6px';
-        line.textContent = '#' + device.slot + ' · ' + device.key + '… · dernière connexion ' + fmtDate(device.lastSeen) + ' ';
-        if (!device.revoked) {
-          var free = document.createElement('button');
-          free.className = 'ghost';
-          free.textContent = 'Libérer';
-          free.onclick = function () { freeDevice(code.id, device.key); };
-          line.appendChild(free);
-        }
-        panel.appendChild(line);
-      });
-    });
-  }
-
-  function freeDevice(codeId, key) {
-    api('/api/admin/codes/' + codeId + '?device=' + key, {method: 'DELETE'}).then(function (result) {
-      if (result.status !== 200) { msg($('listMsg'), result.body.error || 'Erreur.'); return; }
-      msg($('listMsg'), 'Appareil libéré : la place est disponible.', true);
-      load();
-    });
-  }
-
-  $('loginBtn').onclick = function () {
-    var email = $('email').value.trim();
-    var password = $('password').value;
-    if (!email || !password) { msg($('loginMsg'), 'Renseigne l’e-mail et le mot de passe.'); return; }
-    $('loginBtn').disabled = true;
-    api('/api/auth/sign-in/email', {method: 'POST', body: JSON.stringify({email: email, password: password})})
-      .then(function (result) {
-        $('loginBtn').disabled = false;
-        if (result.status === 200) {
-          msg($('loginMsg'), '', true);
-          $('password').value = '';
-          $('logoutBtn').classList.remove('hide');
-          showApp();
-        } else if (result.status === 403) {
-          msg($('loginMsg'), 'Ce compte n’est pas autorisé à administrer Streamix.');
-        } else {
-          msg($('loginMsg'), 'Connexion refusée. Vérifie l’adresse et le mot de passe.');
-        }
-      });
-  };
-
-  $('logoutBtn').onclick = function () {
-    api('/api/auth/sign-out', {method: 'POST'}).then(function () {
-      $('logoutBtn').classList.add('hide');
-      showLogin();
-    });
-  };
-
-  $('createBtn').onclick = function () {
-    var payload = {
-      label: $('label').value.trim(),
-      expiresInDays: $('days').value,
-      maxDevices: $('maxDev').value
-    };
-    $('createBtn').disabled = true;
-    api('/api/admin/codes', {method: 'POST', body: JSON.stringify(payload)}).then(function (result) {
-      $('createBtn').disabled = false;
-      if (result.status === 201) {
-        msg($('createMsg'), 'Code créé.', true);
-        $('newCode').classList.remove('hide');
-        $('newCodeValue').textContent = result.body.code;
-        $('label').value = '';
-        load();
-      } else {
-        msg($('createMsg'), result.body.error || 'Création refusée.');
-      }
-    });
-  };
-
-  $('refreshBtn').onclick = load;
-  $('search').oninput = function () { clearTimeout(state.timer); state.timer = setTimeout(load, 350); };
-  $('status').onchange = load;
-
-  $('publishBtn').onclick = function () {
-    api('/api/admin/release', {
-      method: 'POST',
-      body: JSON.stringify({
-        versionCode: $('verCode').value,
-        versionName: $('verName').value,
-        downloadUrl: $('verUrl').value,
-        notes: $('verNotes').value
-      })
-    }).then(function (result) {
-      if (result.status === 201) {
-        msg($('releaseMsg'), 'Mise à jour publiée.', true);
-      } else {
-        msg($('releaseMsg'), result.body.error || 'Publication refusée.');
-      }
-    });
-  };
-
-  // Resume an existing session on load.
-  api('/api/auth/get-session').then(function (result) {
-    if (result.status === 200 && result.body && result.body.user) {
-      $('logoutBtn').classList.remove('hide');
-      showApp();
-    } else {
-      showLogin();
-    }
-  }).catch(showLogin);
+(function(){
+function $(i){return document.getElementById(i)}
+function note(el,t,ok){el.textContent=t||'';el.style.color=ok?'#6ee7a0':'#ff8f93'}
+function call(p,o){o=o||{};o.credentials='same-origin';o.headers={'Content-Type':'application/json'};
+return fetch(p,o).then(function(r){return r.json().catch(function(){return{}}).then(function(b){return{s:r.status,b:b}})})}
+function when(v){if(!v)return'jamais';var d=new Date(v);return isNaN(d)?String(v):d.toLocaleDateString('fr-FR')}
+function pill(c){if(c.revoked)return'<span class="p bad">Désactivé</span>';
+if(c.expired)return'<span class="p warn">Expiré</span>';
+if(c.maxDevices!==null&&c.devices>=c.maxDevices)return'<span class="p warn">Limite</span>';
+return'<span class="p ok">Actif</span>'}
+var list=[]
+function showApp(){$('login').classList.add('hide');$('app').classList.remove('hide');load()}
+function showLogin(){$('app').classList.add('hide');$('login').classList.remove('hide')}
+function load(){call('/api/codes?search='+encodeURIComponent($('q').value.trim())+'&status='+$('st').value).then(function(r){
+if(r.s===401){showLogin();return}
+if(r.s!==200){note($('info'),'Erreur de chargement.');return}
+list=r.b.codes||[];draw();note($('info'),list.length+' code(s).',1)})}
+function draw(){var tb=$('tb');tb.innerHTML='';
+if(!list.length){tb.innerHTML='<tr><td colspan="5" class="m">Aucun code.</td></tr>';return}
+list.forEach(function(c){var tr=document.createElement('tr');
+tr.innerHTML='<td>'+escapeHtml(c.label||'sans nom')+'<div class="m">'+c.id.slice(0,8)+'</div></td><td>'+pill(c)+'</td><td>'+c.devices+(c.maxDevices===null?' / ∞':' / '+c.maxDevices)+'</td><td>'+when(c.expiresAt)+'</td><td></td>';
+var cell=tr.lastChild;
+var b1=document.createElement('button');b1.className='g';b1.textContent='Appareils';b1.onclick=function(){devices(c)};
+var b2=document.createElement('button');b2.className=c.revoked?'':'g';b2.textContent=c.revoked?'Réactiver':'Désactiver';
+b2.style.marginLeft='6px';b2.onclick=function(){toggle(c)};
+cell.appendChild(b1);cell.appendChild(b2);tb.appendChild(tr)})}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function toggle(c){call('/api/codes?id='+c.id,{method:'PATCH',body:JSON.stringify({revoked:!c.revoked})}).then(function(r){
+if(r.s!==200){note($('info'),'Action refusée.');return}
+note($('info'),c.revoked?'Code réactivé.':'Code désactivé : accès coupé.',1);load()})}
+function devices(c){call('/api/codes?id='+c.id).then(function(r){
+if(r.s!==200){note($('info'),'Erreur appareils.');return}
+var box=$('info');box.style.color='#cfcfd8';box.innerHTML='';
+var h=document.createElement('div');h.textContent='Appareils de '+(c.label||c.id.slice(0,8))+':';box.appendChild(h);
+var ds=r.b.devices||[];
+if(!ds.length){var n=document.createElement('div');n.className='m';n.textContent='Aucun appareil.';box.appendChild(n);return}
+ds.forEach(function(d){var l=document.createElement('div');l.className='m';l.style.marginTop='5px';
+l.textContent='#'+d.slot+' '+d.key+'… dernière connexion '+when(d.lastSeen)+' ';
+if(!d.revoked){var f=document.createElement('button');f.className='g';f.textContent='Libérer';
+f.onclick=function(){free(c.id,d.key)};l.appendChild(f)}box.appendChild(l)})})}
+function free(id,k){call('/api/codes?id='+id+'&device='+k,{method:'DELETE'}).then(function(r){
+note($('info'),r.s===200?'Appareil libéré.':'Erreur.',r.s===200);load()})}
+$('go').onclick=function(){var m=$('mail').value.trim(),p=$('pwd').value;
+if(!m||!p){note($('lmsg'),'Renseigne l’e-mail et le mot de passe.');return}
+$('go').disabled=true;
+call('/api/signin',{method:'POST',body:JSON.stringify({email:m,password:p})}).then(function(r){
+$('go').disabled=false;
+if(r.s===200){$('pwd').value='';$('out').classList.remove('hide');showApp()}
+else note($('lmsg'),'Connexion refusée. Vérifie l’adresse et le mot de passe.')})}
+$('up').onclick=function(){var m=$('mail').value.trim(),p=$('pwd').value;
+if(!m||!p){note($('lmsg'),'Renseigne l\u2019e-mail et un mot de passe.');return}
+$('up').disabled=true;
+call('/api/signup',{method:'POST',body:JSON.stringify({email:m,password:p,name:'Streamix'})}).then(function(r){
+$('up').disabled=false;
+if(r.s===200||r.s===201){note($('lmsg'),'Compte cr\u00e9\u00e9. Connecte-toi.',1);return}
+var why=(r.b&&(r.b.message||r.b.code))||('erreur '+r.s);
+note($('lmsg'),'Cr\u00e9ation impossible: '+why)})}
+$('out').onclick=function(){call('/api/signout',{method:'POST'}).then(function(){$('out').classList.add('hide');showLogin()})}
+$('mk').onclick=function(){$('mk').disabled=true;
+call('/api/codes',{method:'POST',body:JSON.stringify({label:$('lbl').value.trim(),expiresInDays:$('dys').value,maxDevices:$('dev').value})}).then(function(r){
+$('mk').disabled=false;
+if(r.s===201){note($('cmsg'),'Code créé.',1);$('newc').classList.remove('hide');$('newv').textContent=r.b.code;$('lbl').value='';load()}
+else note($('cmsg'),'Création refusée.')})}
+$('rf').onclick=load;$('st').onchange=load;
+$('q').oninput=function(){clearTimeout(window.__t);window.__t=setTimeout(load,350)};
+call('/api/session').then(function(r){if(r.s===200&&r.b&&r.b.user){$('out').classList.remove('hide');showApp()}else showLogin()}).catch(showLogin);
 })();
 </script>
 </body>
