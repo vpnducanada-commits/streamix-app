@@ -62,6 +62,17 @@ th{color:#9a9aa6;font-size:11px;text-transform:uppercase}
 <div id="info" class="msg"></div>
 <table><thead><tr><th>Étiquette</th><th>Statut</th><th>Appareils</th><th>Expire</th><th></th></tr></thead><tbody id="tb"></tbody></table>
 </div>
+<div class="card">
+<h2>Publier une mise à jour</h2>
+<div class="row">
+<div><label>Version</label><input id="vn" placeholder="1.0.7"></div>
+<div><label>Code de version</label><input id="vc" type="number" min="1" placeholder="7"></div>
+</div>
+<label>Lien de l'APK</label><input id="vu" placeholder="https://drive.google.com/...">
+<label>Notes</label><input id="vnt" placeholder="Corrections et nouveautés">
+<div class="row" style="margin-top:12px"><button id="pb">Publier</button></div>
+<div id="pmsg" class="msg"></div>
+</div>
 </section>
 <footer class="m" style="text-align:center;margin-top:18px">Streamix · administration serveur</footer>
 </main>
@@ -116,19 +127,24 @@ $('go').disabled=false;
 if(r.s===200){$('pwd').value='';$('out').classList.remove('hide');showApp()}
 else note($('lmsg'),'Connexion refusée. Vérifie l’adresse et le mot de passe.')})}
 $('up').onclick=function(){var m=$('mail').value.trim(),p=$('pwd').value;
-if(!m||!p){note($('lmsg'),'Renseigne l\u2019e-mail et un mot de passe.');return}
+if(!m||!p){note($('lmsg'),'Renseigne l’e-mail et un mot de passe.');return}
 $('up').disabled=true;
 call('/api/signup',{method:'POST',body:JSON.stringify({email:m,password:p,name:'Streamix'})}).then(function(r){
 $('up').disabled=false;
-if(r.s===200||r.s===201){note($('lmsg'),'Compte cr\u00e9\u00e9. Connecte-toi.',1);return}
+if(r.s===200||r.s===201){note($('lmsg'),'Compte créé. Connecte-toi.',1);return}
 var why=(r.b&&(r.b.message||r.b.code))||('erreur '+r.s);
-note($('lmsg'),'Cr\u00e9ation impossible: '+why)})}
+note($('lmsg'),'Création impossible: '+why)})}
 $('out').onclick=function(){call('/api/signout',{method:'POST'}).then(function(){$('out').classList.add('hide');showLogin()})}
 $('mk').onclick=function(){$('mk').disabled=true;
 call('/api/codes',{method:'POST',body:JSON.stringify({label:$('lbl').value.trim(),expiresInDays:$('dys').value,maxDevices:$('dev').value})}).then(function(r){
 $('mk').disabled=false;
 if(r.s===201){note($('cmsg'),'Code créé.',1);$('newc').classList.remove('hide');$('newv').textContent=r.b.code;$('lbl').value='';load()}
 else note($('cmsg'),'Création refusée.')})}
+$('pb').onclick=function(){$('pb').disabled=true;
+call('/api/publish',{method:'POST',body:JSON.stringify({versionName:$('vn').value.trim(),versionCode:$('vc').value,downloadUrl:$('vu').value.trim(),notes:$('vnt').value.trim()})}).then(function(r){
+$('pb').disabled=false;
+if(r.s===201){note($('pmsg'),'Version publiée.',1);$('vn').value='';$('vc').value='';$('vu').value='';$('vnt').value=''}
+else note($('pmsg'),'Publication refusée ('+r.s+').')})}
 $('rf').onclick=load;$('st').onchange=load;
 $('q').oninput=function(){clearTimeout(window.__t);window.__t=setTimeout(load,350)};
 call('/api/session').then(function(r){if(r.s===200&&r.b&&r.b.user){$('out').classList.remove('hide');showApp()}else showLogin()}).catch(showLogin);

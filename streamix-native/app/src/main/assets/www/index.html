@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<title>Streamix</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="streamix-banner"><img src="streamix-wordmark.png" alt="Streamix"></header>
+
+<!-- ACCÈS DYNAMIQUE -->
+<div id="lockScreen" class="lock-screen">
+  <!-- Fonds animés -->
+  <div class="animated-bg"></div>
+  <div class="bg-effects"><div class="glow glow-1"></div><div class="glow glow-2"></div><div class="glow glow-3"></div></div>
+  <div class="grid-overlay"></div>
+  <div class="particles"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="color-blink-overlay"></div>
+  <div class="light-sweep"></div>
+  <div id="nameAppearance" class="name-appearance" aria-hidden="true"></div>
+
+  <div class="lock-container">
+    <div class="logo-area">
+      <div class="logo-icon pulse-logo"><svg width="42" height="42" viewBox="0 0 42 42" fill="none"><path d="M21 5L35.5 12.5V28L21 35.5L6.5 28V12.5L21 5Z" stroke="#E50914" stroke-width="2.5" fill="rgba(229,9,20,0.15)"/><path d="M17 14L26 21L17 28V14Z" fill="#E50914"/></svg></div>
+      <div class="logo-wrap">
+        <img src="logo-streamix-play.png" alt="STREAMIX" class="main-logo">
+      </div>
+      <div class="logo-underline"></div>
+    </div>
+    <div class="code-card shimmer-card">
+      <div class="card-glow"></div>
+      <div class="code-input-wrapper">
+        <input type="password" id="codeInput" placeholder="Code d'accès" autocomplete="off" spellcheck="false">
+        <button type="button" id="toggleCodeView" class="eye-btn">👁</button>
+        <div class="input-line"></div>
+      </div>
+      <button id="unlockBtn" class="btn-primary super-btn"><span>ENTRER</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg><span class="btn-shine"></span></button>
+      <div id="codeError" class="error-msg"></div>
+      <button class="forgot-link" id="forgotBtn">Code oublié ?</button>
+    </div>
+    <button class="admin-access-link blink-admin" id="adminAccessLink">Administration</button>
+    <a class="whatsapp-buy" href="https://wa.me/24166196414?text=Bonjour%2C%20je%20souhaite%20acheter%20un%20code%20Streamix." aria-label="Acheter un code sur WhatsApp"><span aria-hidden="true">✆</span> Acheter un code sur WhatsApp</a>
+  </div>
+</div>
+
+<!-- CODE OUBLIE -->
+<div id="forgotModal" class="modal-overlay hidden">
+  <div class="modal-backdrop" data-close="forgot"></div>
+  <div class="modal-box">
+    <div class="modal-header"><div><img src="logo-streamix-play.png" class="modal-brand" alt="Streamix"><h3>Récupération</h3></div><button class="close-modal" data-close="forgot">✕</button></div>
+    <div class="security-question"><span>QUESTION</span><strong>Quelle est la date de naissance d'Israël ?</strong></div>
+    <input type="text" id="forgotAnswer" placeholder="JJ/MM/AAAA">
+    <div id="forgotError" class="error-msg"></div>
+    <div id="forgotSuccess" class="success-msg"></div>
+    <div class="modal-actions"><button class="btn-ghost" data-close="forgot">Annuler</button><button class="btn-primary small" id="forgotSubmit">Vérifier</button></div>
+  </div>
+</div>
+
+<!-- LOGIN ADMIN -->
+<div id="adminLoginModal" class="modal-overlay hidden">
+  <div class="modal-backdrop" data-close="adminLogin"></div>
+  <div class="modal-box admin-login-box">
+    <div class="modal-header"><div><img src="logo-streamix-play.png" class="modal-brand" alt="Streamix"><h3>Administration</h3></div><button class="close-modal" data-close="adminLogin">✕</button></div>
+    <div class="login-field"><label>Nom</label><input type="text" id="adminUser" placeholder="Nom"></div>
+    <div class="login-field"><label>Mot de passe</label><div class="password-wrap"><input type="password" id="adminPass" placeholder="Mot de passe"><button type="button" class="eye-btn small-eye" data-toggle="adminPass">👁</button></div></div>
+    <div id="adminLoginError" class="error-msg"></div>
+    <button class="btn-primary" id="adminLoginBtn" style="margin-top:14px"><span>SE CONNECTER</span></button>
+  </div>
+</div>
+
+<!-- NAVIGATEUR -->
+<div id="browserView" class="browser-view hidden">
+  <div id="topBar" class="top-bar hidden-bar">
+    <div class="top-bar-inner">
+      <div class="brand-mini" style="gap:8px"><img src="logo-streamix-play.png" alt="STREAMIX" style="height:18px;width:auto"><span id="sessionBadge" class="session-badge"></span></div>
+      <div class="search-wrapper"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-3.5-3.5"/></svg><input type="url" id="urlInput" placeholder=""><button id="goBtn" class="go-btn">Aller</button></div>
+      <div class="top-actions"><button class="icon-btn" id="fullscreenBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button><button class="icon-btn lock-btn" id="lockBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button></div>
+    </div>
+  </div>
+  <div id="browserContent" class="browser-content">
+    <div class="browser-watermark" aria-hidden="true"><img src="logo-streamix-play.png" alt=""></div>
+    <iframe id="webFrame" src="about:blank" allow="fullscreen; autoplay; clipboard-read; clipboard-write" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"></iframe>
+    <div id="welcomePopup" class="welcome-popup">
+      <div class="welcome-popup-card">
+        <div class="welcome-popup-logo"><svg width="28" height="28" viewBox="0 0 42 42" fill="none"><path d="M21 5L35.5 12.5V28L21 35.5L6.5 28V12.5L21 5Z" stroke="#E50914" stroke-width="2.5" fill="rgba(229,9,20,0.15)"/><path d="M17 14L26 21L17 28V14Z" fill="#E50914"/></svg></div>
+        <h2>Bienvenue sur Streamix</h2>
+        <p>Ton accès est validé. Bonne navigation !</p>
+        <button class="btn-primary" onclick="closeWelcomePopup()">CONTINUER →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="admin-panel hidden">
+  <div class="admin-backdrop" id="adminBackdrop"></div>
+  <div class="admin-modal">
+    <div class="admin-header"><div><img src="logo-streamix-play.png" class="admin-brand" alt="Streamix"></div><button id="closeAdmin" class="close-admin">✕</button></div>
+    <div style="background:linear-gradient(135deg,#E50914,#B0060F);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="color:#fff;font-weight:800;font-size:13px;letter-spacing:0.5px">⚡ GÉNÉRATEUR</div>
+      <button onclick="generateCode()" style="background:#fff;color:#E50914;border:none;padding:10px 16px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2)">+ GÉNÉRER UN CODE</button>
+    </div>
+    <div class="admin-tabs">
+      <button class="tab-btn" data-tab="administration">Administration</button>
+      <button class="tab-btn active" data-tab="utilisateurs">Utilisateurs</button>
+    </div>
+    <div id="tab-administration" class="tab-content">
+      <div class="admin-grid">
+        <div class="admin-card"><h4>Site d’accueil pour tous les codes</h4><div class="input-group"><input type="url" id="defaultUrlInput" value="https://vod.talis.top/" readonly aria-label="Site d’accueil"></div></div>
+        <div class="admin-card"><h4>Code principal</h4><div class="code-display"><span id="currentCodeDisplay">STREAMIX</span><button class="btn-icon-small" onclick="copyCode()">Copier</button></div><div class="input-group"><input type="text" id="newCodeInput" placeholder="Nouveau code"><button class="btn-small red" onclick="updateMainCode()">Changer</button></div></div>
+        <div class="admin-card highlight"><h4>Code Secret Master</h4><div class="code-display" style="border-color:rgba(229,9,20,0.3)"><span style="font-size:13px;letter-spacing:1px">Gedeonokana_Streamix</span><button class="btn-icon-small" onclick="copySecret()">Copier</button></div></div>
+        <div class="admin-card"><h4>Question secours</h4><div class="input-group"><input type="text" id="securityAnswerInput"><button class="btn-small" onclick="saveSecurityAnswer()">Enregistrer</button></div><p class="small-note">Actuelle : <b id="securityPreview">26/06/2002</b></p></div>
+      </div>
+    </div>
+    <div id="tab-utilisateurs" class="tab-content active">
+      <div class="users-header"><div><h4>Générateur</h4><p id="userCount">0 codes</p></div></div>
+      <div class="generate-box-v2" id="generateBox">
+        <button class="btn-primary" onclick="generateCode()" style="width:100%;padding:16px;font-size:14px;letter-spacing:1px">⚡ GÉNÉRER UN CODE</button>
+        <div class="gen-options">
+          <div class="gen-field"><label>Durée</label><select id="codeDuration"><option value="1">1 jour</option><option value="7" selected>7 jours</option><option value="15">15 jours</option><option value="30">30 jours</option><option value="60">60 jours</option><option value="90">90 jours</option><option value="illimite">Illimité</option></select></div>
+          <div class="gen-field"><label>Appareils</label><select id="codeDevices"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option><option value="illimite">Illimité</option></select></div>
+        </div>
+      </div>
+      <div id="usersList" class="users-list"></div>
+      <div class="admin-card" style="margin-top:16px"><div class="stats-grid"><div class="stat"><strong id="statTotal">0</strong><span>Codes</span></div><div class="stat"><strong id="statActive">0</strong><span>Actifs</span></div><div class="stat"><strong id="statExpired">0</strong><span>Expirés</span></div></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
